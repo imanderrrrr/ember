@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { resolveCorsOrigins } from "./lib/cors.js";
+import { resolveCorsOrigin } from "./lib/cors.js";
 import auth from "./routes/auth.js";
 import salon from "./modules/salon/salon.routes.js";
 import reservations from "./modules/reservations/reservations.routes.js";
@@ -19,7 +19,7 @@ app.use(
   cors({
     // En una instalación por nodos, el frontend vive en otra computadora.
     // Configurar con CORS_ORIGINS=http://IP_FRONTEND:3000,http://frontend.local:3000
-    origin: resolveCorsOrigins(),
+    origin: resolveCorsOrigin(),
     credentials: true,
   }),
 );
