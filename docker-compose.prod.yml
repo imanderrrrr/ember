@@ -1,0 +1,106 @@
+# EMBER · orquestación de PRODUCCIÓN (100% en contenedores)
+#
+# A diferencia de docker-compose.yml (dev, monta el código y usa hot reload),
+# este stack corre SOLO desde imágenes autocontenidas (target `runner`): no
+# necesita el código fuente en el host. Orden de arranque:
+#
+#   db  →  migrate (esquema + usuarios)  →  api  →  web
+#
+# ── Uso con imágenes locales ────────────────────────────────────────────────
+#   docker build --target runner -t ember-web:prod .
+#   docker build --target runner -t ember-api:prod ./api
+#   AUTH_SECRET=$(openssl rand -base64 32) docker compose -f docker-compose.prod.yml up -d
+#
+# ── Uso con imágenes publicadas en Docker Hub (reemplaza <usuario>) ──────────
+#   IMAGE_WEB=<usuario>/ember-web:latest \
+#   IMAGE_API=<usuario>/ember-api:latest \
+#   AUTH_SECRET=$(openssl rand -base64 32) \
+#     docker compose -f docker-compose.prod.yml up -d
+#
+# ── Cargar (o resetear) el plano de salón demo, una sola vez ─────────────────
+#   docker compose -f docker-compose.prod.yml --profile seed run --rm seed-salon
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ember-db-prod
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=ember
+      - POSTGRES_PASSWORD=ember
+      - POSTGRES_DB=ember
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ember -d ember"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One-shot: aplica migraciones y siembra usuarios. Ambas operaciones son
+  # idempotentes (drizzle registra las migraciones aplicadas; el seed de
+  # usuarios omite los que ya existen), así que es seguro re-ejecutarlo.
+  migrate:
+    image: ${IMAGE_API:-ember-api:prod}
+    container_name: ember-migrate-prod
+    command: ["sh", "-c", "node dist/scripts/migrate.js && node dist/scripts/seed.js"]
+    environment:
+      - DATABASE_URL=postgres://ember:ember@db:5432/ember
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  # One-shot OPCIONAL (perfil `seed`): carga el plano de salón demo. Es
+  # DESTRUCTIVO (trunca zonas/mesas/figuras), por eso no corre por defecto.
+  seed-salon:
+    image: ${IMAGE_API:-ember-api:prod}
+    profiles: ["seed"]
+    command: ["node", "dist/scripts/seed-salon.js"]
+    environment:
+      - DATABASE_URL=postgres://ember:ember@db:5432/ember
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: ${IMAGE_API:-ember-api:prod}
+    container_name: ember-api-prod
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgres://ember:ember@db:5432/ember
+      # SMTP para los correos de confirmación de reserva (desde el .env).
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - MAIL_FROM=${MAIL_FROM:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    image: ${IMAGE_WEB:-ember-web:prod}
+    container_name: ember-web-prod
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    environment:
+      - API_URL=http://api:3001
+      - AUTH_SECRET=${AUTH_SECRET:-dev-secret-change-me-with-openssl-rand-base64-32}
+      - AUTH_TRUST_HOST=true
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  db-data:

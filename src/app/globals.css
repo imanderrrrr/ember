@@ -1,0 +1,872 @@
+/* v2 */
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--color-success);
+  --color-success-foreground: var(--color-success-foreground);
+  --color-warning: var(--color-warning);
+  --color-warning-foreground: var(--color-warning-foreground);
+  --color-info: var(--color-info);
+  --color-info-foreground: var(--color-info-foreground);
+  --color-error: var(--color-error);
+  --color-error-foreground: var(--color-error-foreground);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brasa/ember accents (used in Bienvenida + Login + dark cards) */
+  --color-ember-bg-1: #1a0f09;
+  --color-ember-bg-2: #0e0a08;
+  --color-ember-bg-3: #160c08;
+  --color-ember-deep: #1f1f1f;
+  --color-ember-line: #3a322c;
+  --color-ember-line-2: #4a3f37;
+  --color-ember-muted: #6b6660;
+  --color-ember-mist: #a89d8e;
+  --color-ember-cream: #faf5eb;
+  --color-ember-cream-2: #f7f3ee;
+  --color-ember-cream-3: #fbe7d6;
+  --color-ember-edge: #ede6dc;
+  --color-ember-edge-2: #d8cec2;
+  --color-ember-flame: #e07b3c;
+  --color-ember-flame-2: #e67e22;
+  --color-ember-flame-3: #f5b27a;
+  --color-ember-charcoal: #18120e;
+  --color-ember-burn: #b45309;
+  --color-ember-burn-2: #c2410c;
+  --color-ember-burn-3: #9a3412;
+  --color-ember-cocoa: #6b4f3a;
+  --color-ember-bark: #7c2d12;
+  --color-ember-leaf: #7c8a6a;
+  --color-ember-amber: #e8b07f;
+
+  --font-sans: var(--font-geist);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-playfair);
+  --font-jakarta: var(--font-jakarta);
+
+  --radius-none: 0px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+}
+
+:root {
+  --background: #f2f3f0;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #ff8400;
+  --primary-foreground: #111111;
+  --secondary: #e7e8e5;
+  --secondary-foreground: #111111;
+  --muted: #f2f3f0;
+  --muted-foreground: #666666;
+  --accent: #f2f3f0;
+  --accent-foreground: #111111;
+  --destructive: #d93c15;
+  --border: #cbccc9;
+  --input: #cbccc9;
+  --ring: #666666;
+
+  --color-success: #dfe6e1;
+  --color-success-foreground: #004d1a;
+  --color-warning: #e9e3d8;
+  --color-warning-foreground: #804200;
+  --color-info: #dfdfe6;
+  --color-info-foreground: #000066;
+  --color-error: #e5dcda;
+  --color-error-foreground: #8c1c00;
+
+  --sidebar: #e7e8e5;
+  --sidebar-foreground: #666666;
+  --sidebar-primary: #18181b;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #cbccc9;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #cbccc9;
+  --sidebar-ring: #71717a;
+}
+
+.dark {
+  --background: #111111;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #ff8400;
+  --primary-foreground: #111111;
+  --secondary: #2e2e2e;
+  --secondary-foreground: #ffffff;
+  --muted: #2e2e2e;
+  --muted-foreground: #b8b9b6;
+  --accent: #111111;
+  --accent-foreground: #f2f3f0;
+  --destructive: #ff5c33;
+  --border: #2e2e2e;
+  --input: #2e2e2e;
+  --ring: #666666;
+
+  --color-success: #222924;
+  --color-success-foreground: #b6ffce;
+  --color-warning: #291c0f;
+  --color-warning-foreground: #ff8400;
+  --color-info: #222229;
+  --color-info-foreground: #b2b2ff;
+  --color-error: #24100b;
+  --color-error-foreground: #ff5c33;
+
+  --sidebar: #18181b;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #18181b;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #2a2a30;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #ffffff1a;
+  --sidebar-ring: #71717a;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  .font-display {
+    font-family: var(--font-display), Georgia, serif;
+  }
+  .font-mono {
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  }
+  .font-jakarta {
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+  }
+}
+
+/* Custom utilities used across the EMBER screens */
+.bg-ember-vignette {
+  background:
+    linear-gradient(180deg, #1a0f09 0%, #0e0a08 50%, #160c08 100%);
+}
+
+.bg-ember-halo {
+  background: radial-gradient(
+    closest-side at 50% 55%,
+    rgba(154, 52, 18, 0.4) 0%,
+    rgba(124, 45, 18, 0.2) 50%,
+    rgba(14, 10, 8, 0) 100%
+  );
+}
+
+.bg-ember-glow {
+  background: radial-gradient(
+    closest-side at 50% 50%,
+    rgba(224, 123, 60, 0.33) 0%,
+    rgba(180, 83, 9, 0.15) 40%,
+    rgba(14, 10, 8, 0) 100%
+  );
+}
+
+.bg-ember-vignette-mask {
+  background: radial-gradient(
+    closest-side at 50% 50%,
+    rgba(14, 10, 8, 0) 50%,
+    rgba(14, 10, 8, 0.8) 100%
+  );
+}
+
+.bg-ember-button {
+  background: linear-gradient(180deg, #e07b3c 0%, #b45309 100%);
+}
+
+.text-ember-wordmark {
+  background: linear-gradient(180deg, #f5b27a 0%, #e07b3c 50%, #b45309 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Solid metallic gold wordmark — engraved feel */
+.ember-wordmark {
+  color: #d4a574;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    0 -1px 0 rgba(255, 220, 180, 0.08);
+}
+
+/* ─── Sign-in transition overlay ──────────────────────────────────────────── */
+@keyframes signin-overlay-in {
+  0%   { opacity: 0; backdrop-filter: blur(0); }
+  100% { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+@keyframes signin-content-in {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.97); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes signin-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.6); }
+}
+
+.signin-overlay {
+  animation: signin-overlay-in 320ms ease-out forwards;
+}
+
+.signin-overlay > *:not(.bg-ember-halo) {
+  animation: signin-content-in 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 120ms backwards;
+}
+
+.signin-pulse {
+  animation: signin-pulse 1.1s ease-in-out infinite;
+}
+
+/* ─── Modal "Dividir cuenta" — entrada del overlay + caja ─────────────────── */
+@keyframes dc-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes dc-modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-dc-overlay {
+  animation: dc-overlay-in 200ms ease-out;
+}
+.animate-dc-modal {
+  animation: dc-modal-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-dc-overlay,
+  .animate-dc-modal {
+    animation: none;
+  }
+}
+
+/* ─── Pantalla "Cobro completado" — entrada ceremonial ───────────────────── */
+@keyframes cobro-check-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  55%  { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes cobro-ring {
+  0%   { opacity: 0.55; transform: scale(0.85); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+@keyframes cobro-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-cobro-check {
+  animation: cobro-check-pop 560ms cubic-bezier(0.34, 1.45, 0.5, 1) backwards;
+}
+.animate-cobro-ring {
+  animation: cobro-ring 900ms ease-out 220ms backwards;
+}
+.cobro-stagger > * {
+  animation: cobro-rise 520ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+.cobro-stagger > *:nth-child(1) { animation-delay: 100ms; }
+.cobro-stagger > *:nth-child(2) { animation-delay: 190ms; }
+.cobro-stagger > *:nth-child(3) { animation-delay: 290ms; }
+.cobro-stagger > *:nth-child(4) { animation-delay: 390ms; }
+.cobro-stagger > *:nth-child(5) { animation-delay: 480ms; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-cobro-check,
+  .animate-cobro-ring,
+  .cobro-stagger > * {
+    animation: none;
+  }
+}
+
+/* ─── Objetivo del turno — swap del botón verde al porcentaje ────────────── */
+@keyframes goal-in {
+  0%   { opacity: 0; transform: scale(0.9) translateY(6px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-goal-in {
+  animation: goal-in 460ms cubic-bezier(0.34, 1.3, 0.5, 1) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-goal-in { animation: none; }
+}
+
+/* ─── Block intro stagger (dashboard cards, etc.) ─────────────────────────
+ * Aplicar `stagger-children` a un contenedor: sus hijos directos hacen
+ * un pequeño fade + translateY de entrada, escalonados ~50ms entre ellos.
+ * animation-fill-mode `backwards` evita el flash inicial (mantiene el estado
+ * "from" durante el delay). Se puede anidar: un padre `stagger-children` con
+ * hijos que a su vez son `stagger-children` produce una cascada natural. */
+@keyframes block-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-children > * {
+  animation: block-fade-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+.stagger-children > *:nth-child(1)  { animation-delay:  40ms; }
+.stagger-children > *:nth-child(2)  { animation-delay:  90ms; }
+.stagger-children > *:nth-child(3)  { animation-delay: 140ms; }
+.stagger-children > *:nth-child(4)  { animation-delay: 190ms; }
+.stagger-children > *:nth-child(5)  { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6)  { animation-delay: 290ms; }
+.stagger-children > *:nth-child(7)  { animation-delay: 340ms; }
+.stagger-children > *:nth-child(8)  { animation-delay: 390ms; }
+.stagger-children > *:nth-child(9)  { animation-delay: 440ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 490ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-children > * {
+    animation: none;
+  }
+}
+
+/* ─── Page enter ─────────────────────────────────────────────────────────
+ * Animación de entrada para páginas completas (e.g. `/salon` cuando se
+ * navega desde el dashboard). Combina fade-in con un leve slide-up para
+ * sugerir continuidad entre rutas. Compañera del subtle `stagger-children`
+ * que ya existe para tarjetas internas. */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-page-enter {
+  animation: page-enter 480ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+/* Variante para el contenido interno: arranca un pelo después para que el
+ * top bar entre primero y luego baje el body. */
+.animate-page-enter-body {
+  animation: page-enter 520ms cubic-bezier(0.2, 0.7, 0.2, 1) 100ms backwards;
+}
+
+/* ─── Cinematic part-by-part entry (usado por /salon) ───────────────────
+ * Cada pieza del layout entra desde su borde del viewport en una secuencia
+ * orquestada: top bar baja, sidebar entra desde la izquierda, plano hace
+ * fade+scale, panel derecho entra desde la derecha. Combinado con
+ * `stagger-children` adentro de sidebar y panel derecho, se siente como
+ * un set-piece teatral en lugar de un page load. */
+
+@keyframes salon-slide-down {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes salon-slide-from-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes salon-slide-from-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes salon-fade-scale {
+  from { opacity: 0; transform: scale(0.985); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes salon-table-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  60%  { transform: scale(1.04); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes salon-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-salon-topbar {
+  animation: salon-slide-down 420ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.animate-salon-sidebar {
+  animation: salon-slide-from-left 520ms cubic-bezier(0.2, 0.7, 0.2, 1) 120ms backwards;
+}
+.animate-salon-main {
+  animation: salon-fade-scale 560ms cubic-bezier(0.2, 0.7, 0.2, 1) 180ms backwards;
+}
+.animate-salon-detail {
+  animation: salon-slide-from-right 520ms cubic-bezier(0.2, 0.7, 0.2, 1) 240ms backwards;
+}
+
+/* Mesas y formas en el plano: cada una "pop in" con stagger fino.
+ * El delay base (.salon-stage-base) coincide con cuando `.animate-salon-main`
+ * empieza a verse — así los items aparecen sobre el canvas ya presente.
+ * Usar `style={{ animationDelay: \`${i * 35 + 380}ms\` }}` desde el componente. */
+.animate-salon-table {
+  animation: salon-table-pop 460ms cubic-bezier(0.2, 0.9, 0.3, 1.05) backwards;
+}
+/* Adornos del plano (paredes, plantas, columnas) — fade simple, sin pop. */
+.animate-salon-decor {
+  animation: salon-fade 540ms cubic-bezier(0.2, 0.7, 0.2, 1) 320ms backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter,
+  .animate-page-enter-body,
+  .animate-salon-topbar,
+  .animate-salon-sidebar,
+  .animate-salon-main,
+  .animate-salon-detail,
+  .animate-salon-table,
+  .animate-salon-decor {
+    animation: none;
+  }
+}
+
+/* ─── Lock screen — PIN error shake ───────────────────────────────────── */
+@keyframes lock-shake {
+  0%, 100% { transform: translateX(0); }
+  10%      { transform: translateX(-12px); }
+  25%      { transform: translateX(12px); }
+  40%      { transform: translateX(-10px); }
+  55%      { transform: translateX(10px); }
+  70%      { transform: translateX(-6px); }
+  85%      { transform: translateX(6px); }
+}
+.lock-shake {
+  animation: lock-shake 520ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.brand-line {
+  background: linear-gradient(
+    90deg,
+    rgba(224, 123, 60, 0) 0%,
+    #e07b3c 50%,
+    rgba(224, 123, 60, 0) 100%
+  );
+}
+
+.deco-line {
+  background: linear-gradient(
+    90deg,
+    rgba(124, 45, 18, 0) 0%,
+    #c2410c 50%,
+    rgba(124, 45, 18, 0) 100%
+  );
+}
+
+.login-halo {
+  background: radial-gradient(
+    closest-side at 50% 50%,
+    rgba(194, 65, 12, 0.25) 0%,
+    rgba(124, 45, 18, 0.12) 45%,
+    rgba(14, 10, 8, 0) 100%
+  );
+}
+
+.login-halo-2 {
+  background: radial-gradient(
+    closest-side at 50% 50%,
+    rgba(154, 52, 18, 0.19) 0%,
+    rgba(14, 10, 8, 0) 100%
+  );
+}
+
+.login-vignette {
+  background: linear-gradient(
+    180deg,
+    rgba(14, 10, 8, 0) 0%,
+    rgba(14, 10, 8, 0.8) 100%
+  );
+}
+
+/* ─── Ember animations: brasas, fuego y humo ──────────────────────────── */
+
+/* Smoke video layer (rises from below) */
+.smoke-video {
+  position: absolute;
+  inset: 0 0 0 0;
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  object-position: center bottom;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0.32;
+  z-index: -4;
+  filter: blur(1px);
+}
+
+@keyframes ember-breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.72; transform: scale(1.06); }
+}
+
+@keyframes ember-breathe-slow {
+  0%, 100% { opacity: 0.95; transform: scale(1.02); }
+  50%      { opacity: 0.6; transform: scale(1.1); }
+}
+
+/* Irregular flicker — feels like real flame movement */
+@keyframes ember-flicker {
+  0%   { opacity: 0.85; transform: scale(1); }
+  9%   { opacity: 1;    transform: scale(1.04); }
+  18%  { opacity: 0.74; transform: scale(0.98); }
+  27%  { opacity: 0.95; transform: scale(1.02); }
+  36%  { opacity: 0.68; transform: scale(0.96); }
+  45%  { opacity: 1;    transform: scale(1.05); }
+  54%  { opacity: 0.82; transform: scale(1); }
+  63%  { opacity: 0.92; transform: scale(1.03); }
+  72%  { opacity: 0.7;  transform: scale(0.97); }
+  81%  { opacity: 0.98; transform: scale(1.04); }
+  90%  { opacity: 0.8;  transform: scale(1); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
+/* Rising embers: small bright dots that float up and dim */
+@keyframes ember-rise {
+  0%   { transform: translate3d(0, 0, 0) scale(0.5); opacity: 0; }
+  8%   { opacity: 1; }
+  60%  { opacity: 0.85; }
+  100% {
+    transform: translate3d(var(--drift, 18px), var(--travel, -520px), 0)
+      scale(0.15);
+    opacity: 0;
+  }
+}
+
+/* Slow ascending smoke wisps */
+@keyframes smoke-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); opacity: 0; }
+  18%  { opacity: 0.18; }
+  100% {
+    transform: translate3d(var(--smoke-drift, 90px), -460px, 0) scale(1.7)
+      rotate(9deg);
+    opacity: 0;
+  }
+}
+
+/* Brief ash sparkle (small, occasional bright pop) */
+@keyframes ember-spark {
+  0%, 92%, 100% { opacity: 0; }
+  94%           { opacity: 1; }
+  96%           { opacity: 0.4; }
+}
+
+.animate-ember-breathe       { animation: ember-breathe 7s ease-in-out infinite; }
+.animate-ember-breathe-slow  { animation: ember-breathe-slow 11s ease-in-out infinite; animation-delay: 1.4s; }
+.animate-ember-flicker       { animation: ember-flicker 4.5s ease-in-out infinite; }
+.animate-ember-flicker-slow  { animation: ember-flicker 7s ease-in-out infinite; animation-delay: 0.6s; }
+
+.ember-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    closest-side,
+    #fff7e6 0%,
+    #f5b27a 25%,
+    #e07b3c 55%,
+    #b45309 80%,
+    rgba(180, 83, 9, 0) 100%
+  );
+  box-shadow:
+    0 0 6px rgba(255, 132, 0, 0.9),
+    0 0 14px rgba(224, 123, 60, 0.55),
+    0 0 28px rgba(180, 83, 9, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  animation: ember-rise var(--duration, 8s) ease-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+
+.ember-particle-spark {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: #fff7e6;
+  box-shadow: 0 0 8px #ffd9a3, 0 0 20px rgba(255, 132, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  animation: ember-spark var(--spark-duration, 5s) ease-in-out infinite;
+  animation-delay: var(--spark-delay, 0s);
+  will-change: opacity;
+}
+
+.smoke-wisp {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    closest-side,
+    rgba(96, 84, 76, 0.55) 0%,
+    rgba(58, 50, 44, 0.22) 45%,
+    rgba(14, 10, 8, 0) 100%
+  );
+  filter: blur(22px);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: smoke-drift var(--duration, 14s) ease-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+
+.wordmark-glow {
+  background: radial-gradient(
+    closest-side at 50% 55%,
+    rgba(255, 132, 0, 0.45) 0%,
+    rgba(224, 123, 60, 0.28) 35%,
+    rgba(180, 83, 9, 0.1) 65%,
+    rgba(14, 10, 8, 0) 100%
+  );
+  filter: blur(8px);
+}
+
+/* ─── Landing intro · ceremonia de entrada en `/` ──────────────────────────
+ * `ember-intro`           → rise + fade suave para los elementos secundarios
+ *                           (pre-título, brand line, sub, botón, footer).
+ * `ember-intro-wordmark`  → entrada dramática del wordmark EMBER (scale +
+ *                           blur lift). Más lenta y con presencia.
+ * `backwards` fill-mode mantiene el estado `from` durante el animation-delay
+ * (sin flash del estado final). Los delays se pasan inline con tailwind
+ * arbitrary `[animation-delay:Xms]` para mantenerlo escalonado y legible.
+ */
+@keyframes ember-intro {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ember-intro-wordmark {
+  0%   { opacity: 0; transform: scale(0.94); filter: blur(10px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* Usamos longhand (no shorthand) para no resetear `animation-delay`, que
+ * llega como utility de Tailwind por cada elemento (`[animation-delay:Xms]`). */
+.ember-intro {
+  animation-name: ember-intro;
+  animation-duration: 750ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation-fill-mode: backwards;
+}
+
+.ember-intro-wordmark {
+  animation-name: ember-intro-wordmark;
+  animation-duration: 1200ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation-fill-mode: backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ember-breathe,
+  .animate-ember-breathe-slow,
+  .animate-ember-flicker,
+  .animate-ember-flicker-slow,
+  .ember-particle,
+  .ember-particle-spark,
+  .smoke-wisp,
+  .ember-intro,
+  .ember-intro-wordmark {
+    animation: none !important;
+    opacity: var(--reduced-opacity, 0.9);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+ * Reservas · Wizard Paso 2 — animaciones de ingreso por elemento.
+ * Cada elemento recibe su propio delay inline (`style="animation-delay: ..."`).
+ * Las keyframes son específicas para que cada parte respire distinto:
+ *   - r2-fadeup  → entrada vertical sutil (8-10px) para títulos y cards.
+ *   - r2-fadeleft → para etiquetas de filas del timeline (T2, T6, …).
+ *   - r2-pop      → chips y badges con un escalado mínimo.
+ *   - r2-bar      → barras del Gantt, crecen de izquierda a derecha.
+ *   - r2-progress → ancho del progress bar de "68% ocupación" (CSS var).
+ *   - r2-pulse    → halo naranja una sola vez sobre "Tu reserva".
+ * ───────────────────────────────────────────────────────────────── */
+
+@keyframes r2-fadeup {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes r2-fadeleft {
+  from { opacity: 0; transform: translate3d(-10px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes r2-pop {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes r2-bar {
+  from { opacity: 0.2; transform: scaleX(0); }
+  to   { opacity: 1;   transform: scaleX(1); }
+}
+@keyframes r2-progress {
+  from { width: 0%; }
+  to   { width: var(--r2-progress-target, 100%); }
+}
+@keyframes r2-pulse-once {
+  0%   { box-shadow: 0 0 0 0 rgba(230,126,34,0.45); }
+  50%  { box-shadow: 0 0 0 6px rgba(230,126,34,0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(230,126,34,0); }
+}
+
+.animate-r2-up,
+.animate-r2-left,
+.animate-r2-pop,
+.animate-r2-bar,
+.animate-r2-progress {
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-r2-up      { animation-name: r2-fadeup;   animation-duration: 480ms; opacity: 0; }
+.animate-r2-left    { animation-name: r2-fadeleft; animation-duration: 480ms; opacity: 0; }
+.animate-r2-pop     { animation-name: r2-pop;      animation-duration: 360ms; opacity: 0; }
+.animate-r2-bar {
+  animation-name: r2-bar;
+  animation-duration: 560ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: left center;
+  transform: scaleX(0);
+  opacity: 0;
+}
+.animate-r2-progress {
+  animation-name: r2-progress;
+  animation-duration: 900ms;
+  width: 0;
+}
+.animate-r2-pulse {
+  animation: r2-pulse-once 1.8s cubic-bezier(0.4, 0, 0.6, 1) 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-r2-up,
+  .animate-r2-left,
+  .animate-r2-pop,
+  .animate-r2-bar,
+  .animate-r2-progress,
+  .animate-r2-pulse {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .animate-r2-progress { width: var(--r2-progress-target, 100%) !important; }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+ * Reservas · Wizard Paso 3 — animaciones de ingreso por elemento.
+ *   - r3-fadeup   → entradas verticales suaves (títulos, cards).
+ *   - r3-fadeleft → labels y filas (chips de zona).
+ *   - r3-pop      → píldoras y botones pequeños.
+ *   - r3-table    → mesas del plano: pequeño escalado + fade.
+ *   - r3-halo     → halo naranja debajo de T4 pulsa una vez.
+ *   - r3-card-up  → cards alternativas se levantan más fuerte.
+ * ───────────────────────────────────────────────────────────────── */
+
+@keyframes r3-fadeup {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes r3-fadeleft {
+  from { opacity: 0; transform: translate3d(-12px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes r3-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes r3-table {
+  from { opacity: 0; transform: scale(0.7); }
+  60%  { opacity: 1; transform: scale(1.04); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes r3-halo {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 0.18; transform: scale(1); }
+  100% { opacity: 0.18; transform: scale(1); }
+}
+@keyframes r3-halo-inner {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 0.12; transform: scale(1); }
+  100% { opacity: 0.12; transform: scale(1); }
+}
+@keyframes r3-card-up {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+.animate-r3-up,
+.animate-r3-left,
+.animate-r3-pop,
+.animate-r3-table,
+.animate-r3-card {
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-r3-up    { animation-name: r3-fadeup;   animation-duration: 520ms; opacity: 0; }
+.animate-r3-left  { animation-name: r3-fadeleft; animation-duration: 480ms; opacity: 0; }
+.animate-r3-pop   { animation-name: r3-pop;      animation-duration: 380ms; opacity: 0; }
+.animate-r3-table {
+  animation-name: r3-table;
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
+  opacity: 0;
+}
+.animate-r3-card  { animation-name: r3-card-up;  animation-duration: 560ms; opacity: 0; }
+
+.animate-r3-halo {
+  animation: r3-halo 900ms cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  opacity: 0;
+}
+.animate-r3-halo-inner {
+  animation: r3-halo-inner 900ms cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-r3-up,
+  .animate-r3-left,
+  .animate-r3-pop,
+  .animate-r3-table,
+  .animate-r3-card,
+  .animate-r3-halo,
+  .animate-r3-halo-inner {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .animate-r3-halo       { opacity: 0.12 !important; }
+  .animate-r3-halo-inner { opacity: 0.18 !important; }
+}

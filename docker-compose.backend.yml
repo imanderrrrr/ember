@@ -1,0 +1,48 @@
+# EMBER · nodo Backend
+#
+# Este compose es para la computadora que corre SOLO el backend. El frontend y
+# Postgres viven en otras computadoras de la misma red y se alcanzan por IP/host
+# y puerto.
+#
+# Uso típico:
+#   cp .env.example .env
+#   # Edita DATABASE_URL, CORS_ORIGINS y STATUS_* con las IP reales.
+#   docker compose -f docker-compose.backend.yml up --build -d
+#
+# Endpoints expuestos por esta computadora:
+#   http://IP_BACKEND:3001/health
+#   http://IP_BACKEND:3001/status
+#   http://IP_BACKEND:3001/status/db
+
+services:
+  api:
+    build:
+      context: ./api
+      target: runner
+    container_name: ${STATUS_BACKEND_CONTAINER_NAME:-ember-api}
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=${DATABASE_URL}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-}
+      - STATUS_BACKEND_DEVICE_NAME=${STATUS_BACKEND_DEVICE_NAME:-PC Backend}
+      - STATUS_BACKEND_DEVICE_HOST=${STATUS_BACKEND_DEVICE_HOST:-pendiente}
+      - STATUS_BACKEND_CONTAINER_NAME=${STATUS_BACKEND_CONTAINER_NAME:-ember-api}
+      - STATUS_BACKEND_PORT=${STATUS_BACKEND_PORT:-3001}
+      - STATUS_FRONTEND_DEVICE_NAME=${STATUS_FRONTEND_DEVICE_NAME:-PC Frontend}
+      - STATUS_FRONTEND_DEVICE_HOST=${STATUS_FRONTEND_DEVICE_HOST:-}
+      - STATUS_FRONTEND_CONTAINER_NAME=${STATUS_FRONTEND_CONTAINER_NAME:-ember-web}
+      - STATUS_FRONTEND_PORT=${STATUS_FRONTEND_PORT:-3000}
+      - STATUS_DATABASE_DEVICE_NAME=${STATUS_DATABASE_DEVICE_NAME:-PC Base de datos}
+      - STATUS_DATABASE_DEVICE_HOST=${STATUS_DATABASE_DEVICE_HOST:-}
+      - STATUS_DATABASE_CONTAINER_NAME=${STATUS_DATABASE_CONTAINER_NAME:-ember-db}
+      - STATUS_DATABASE_PORT=${STATUS_DATABASE_PORT:-5432}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - MAIL_FROM=${MAIL_FROM:-}

@@ -1,0 +1,83 @@
+# EMBER · orquestación de contenedores
+#
+# Fase 2 activa: web + api + db.
+#
+# Comandos comunes:
+#   docker compose up -d              # arranca los 3 servicios en background
+#   docker compose up --build -d      # rebuild antes de arrancar
+#   docker compose logs -f api        # tail de logs del api
+#   docker compose exec api pnpm db:migrate  # correr migraciones
+#   docker compose exec api pnpm db:seed     # cargar usuario demo
+#   docker compose down               # baja todo (preserva el volumen db-data)
+#   docker compose down -v            # baja todo + borra la DB (cuidado)
+
+services:
+  web:
+    build:
+      context: .
+      target: dev
+    container_name: ember-web
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - NEXT_TELEMETRY_DISABLED=1
+      - API_URL=http://api:3001
+      - AUTH_SECRET=${AUTH_SECRET:-dev-secret-change-me-with-openssl-rand-base64-32}
+      - AUTH_TRUST_HOST=true
+    depends_on:
+      api:
+        condition: service_started
+
+  api:
+    build:
+      context: ./api
+      target: dev
+    container_name: ember-api
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgres://ember:ember@db:5432/ember
+      # Evita que pnpm 11 intente purgar el modules dir al iniciar sin TTY.
+      - CI=true
+      # SMTP para los correos de confirmación de reserva (desde el .env raíz).
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - MAIL_FROM=${MAIL_FROM:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: ember-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=ember
+      - POSTGRES_PASSWORD=ember
+      - POSTGRES_DB=ember
+    ports:
+      # Expuesto en host para poder conectarse con psql/TablePlus en dev.
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ember -d ember"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
