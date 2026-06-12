@@ -2,15 +2,49 @@
 
 > Full-stack system that runs a restaurant end to end: interactive floor plan, reservations with email confirmation, kitchen order queue, waiter stations and end-of-day cash close. Built for a real venue.
 
-<!--
-📸 SCREENSHOTS — drop images into docs/screenshots/ and uncomment this block:
+## Screenshots
 
-![Floor plan](docs/screenshots/salon.png)
+**Login & live dashboard**
 
-| Reservations | Kitchen | Cash close |
-|---|---|---|
-| ![](docs/screenshots/reservas.png) | ![](docs/screenshots/cocina.png) | ![](docs/screenshots/caja.png) |
--->
+<p>
+  <img src="docs/screenshots/login.png" width="49%" alt="Login">
+  <img src="docs/screenshots/dashboard.png" width="49%" alt="Live dashboard">
+</p>
+
+**Floor plan — live view & editor**
+
+<p>
+  <img src="docs/screenshots/salon.png" width="49%" alt="Floor plan, live view">
+  <img src="docs/screenshots/salon-edit.png" width="49%" alt="Floor plan editor">
+</p>
+
+**Waiter station — table map & order taking**
+
+<p>
+  <img src="docs/screenshots/mesero.png" width="49%" alt="Waiter mode">
+  <img src="docs/screenshots/mesero-mesa.png" width="49%" alt="Order taking with menu and active ticket">
+</p>
+
+**Kitchen display & reservation wizard**
+
+<p>
+  <img src="docs/screenshots/cocina.png" width="49%" alt="Kitchen display system">
+  <img src="docs/screenshots/reservas-nueva.png" width="49%" alt="New reservation wizard">
+</p>
+
+**Cash register — charging & end-of-day close**
+
+<p>
+  <img src="docs/screenshots/caja.png" width="49%" alt="Cash register">
+  <img src="docs/screenshots/caja-cierre.png" width="49%" alt="Cash close reconciliation">
+</p>
+
+**Node status monitor & PIN lock screen**
+
+<p>
+  <img src="docs/screenshots/status.png" width="49%" alt="System status monitor">
+  <img src="docs/screenshots/lock.png" width="49%" alt="PIN lock screen">
+</p>
 
 ## What it does
 
