@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { verifySecret } from "../lib/auth.js";
+import { internalSecretMiddleware, authMiddleware } from "../lib/auth-middleware.js";
 
 const auth = new Hono();
 
@@ -16,12 +17,10 @@ const verifyBody = z.object({
  * POST /auth/verify
  *
  * Llamado por el Credentials provider de Auth.js (en el container `web`)
- * dentro de su callback `authorize()`. Devuelve el user (sin secretos) si
- * las credenciales son válidas, o 401 si no.
- *
- * No emite cookies ni JWT — eso lo hace Auth.js en el lado de `web`.
+ * dentro de su callback `authorize()`. Requiere cabecera 'x-internal-secret'.
+ * Devuelve el user (sin secretos) si las credenciales son válidas, o 401 si no.
  */
-auth.post("/verify", async (c) => {
+auth.post("/verify", internalSecretMiddleware, async (c) => {
   const parsed = verifyBody.safeParse(await c.req.json().catch(() => ({})));
   if (!parsed.success) {
     return c.json({ error: "invalid_body", issues: parsed.error.issues }, 400);
@@ -68,13 +67,19 @@ const verifyPinBody = z.object({
  * usuario tipea su PIN. Es un check de "step-up" — el usuario ya está
  * autenticado, solo confirmamos identidad antes de desbloquear.
  */
-auth.post("/verify-pin", async (c) => {
+auth.post("/verify-pin", authMiddleware, async (c) => {
   const parsed = verifyPinBody.safeParse(await c.req.json().catch(() => ({})));
   if (!parsed.success) {
     return c.json({ error: "invalid_body", issues: parsed.error.issues }, 400);
   }
 
   const { userId, pin } = parsed.data;
+  const currentUser = c.get("user");
+
+  if (currentUser.sub !== userId && currentUser.role !== "admin") {
+    return c.json({ error: "forbidden", message: "No puedes verificar el PIN de otro usuario" }, 403);
+  }
+
   const user = await db.query.users.findFirst({
     where: eq(users.id, userId),
   });

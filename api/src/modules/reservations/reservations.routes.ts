@@ -8,17 +8,21 @@ import {
   parseReservationListFilters,
   ReservationFilterError,
 } from "./reservations.policy.js";
+import { authMiddleware, requireRoles } from "../../lib/auth-middleware.js";
 
 /**
  * Handlers HTTP del módulo Reservaciones.
  *
  * Patrón espejo de `salon.routes.ts`:
- *   1. Validar params/body con Zod.
- *   2. Delegar al service dentro de un try/catch.
- *   3. Si el service tira `DomainError`, mapeamos su `status` y `code`.
+ *   1. Proteger con authMiddleware.
+ *   2. Validar params/body con Zod.
+ *   3. Delegar al service dentro de un try/catch.
+ *   4. Si el service tira `DomainError`, mapeamos su `status` y `code`.
  */
 
 const reservations = new Hono();
+
+reservations.use("*", authMiddleware);
 
 const idParam = z.object({ id: z.string().uuid() });
 
@@ -60,7 +64,10 @@ reservations.get("/:id", async (c) => {
   }
 });
 
-reservations.post("/", async (c) => {
+reservations.post(
+  "/",
+  requireRoles("host", "mesero", "cajero", "gerente_operativo", "admin"),
+  async (c) => {
   const parsed = CreateReservationSchema.safeParse(
     await c.req.json().catch(() => ({})),
   );

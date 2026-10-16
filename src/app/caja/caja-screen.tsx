@@ -17,7 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { UserMenu } from "@/app/dashboard/user-menu";
-import { useLiveRefresh } from "@/lib/use-live-refresh";
+import { useRealtimeEvents } from "@/lib/use-realtime-events";
 import { updateTable } from "@/app/salon/_lib/client-api";
 import { formatQ, type Bill } from "./_lib/billing";
 import { SplitBillModal, type SplitPart } from "./split-bill-modal";
@@ -79,7 +79,11 @@ export function CajaScreen({
    *  el desglose de la división. */
   showTableSelector?: boolean;
 }) {
-  useLiveRefresh(6000);
+  // Sincronización en tiempo real vía SSE en caja
+  useRealtimeEvents({
+    events: ["sale:recorded", "table:status_updated", "order:status_updated"],
+    refreshOnEvent: true,
+  });
 
   const [selectedId, setSelectedId] = useState<string | null>(
     // Preselecciona la mesa pedida si sigue en la lista; si no, la primera.
@@ -154,9 +158,8 @@ export function CajaScreen({
       return;
     }
 
-    // Finalizar el cobro: registrar la venta REAL (fuente del dashboard) y
-    // pasar la mesa a limpieza. La venta es el total de la cuenta, no el monto
-    // tecleado (que puede incluir vuelto).
+    // Finalizar el cobro atómicamente: en una sola transacción ACID de backend se
+    // registra la venta (sales), se marca la comanda de cocina y la mesa pasa a limpieza.
     try {
       await createSale({
         tableId: selectedBill.tableId,
@@ -169,22 +172,17 @@ export function CajaScreen({
         iva: selectedBill.iva,
         total: selectedBill.total,
         items: selectedBill.lines.map((l) => ({
+          menuItemId: (l as any).menuItemId,
           qty: l.qty,
           name: l.name,
           mods: l.mods,
         })),
         serviceDate: todayServiceDate(),
       });
-    } catch (e) {
-      console.error("[caja] registrar venta failed", e);
-    }
-
-    try {
-      await updateTable(selectedBill.tableId, { status: "limpieza" });
       setSplit(null);
       setDone(selectedBill.tableLabel);
     } catch (e) {
-      console.error("[caja] confirmar cobro failed", e);
+      console.error("[caja] transacción atómica de cobro failed", e);
     }
   }, [selectedBill, split, method, user]);
 

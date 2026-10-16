@@ -14,6 +14,8 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
 
 # next.js
 /.next/
@@ -28,6 +30,7 @@
 *.pem
 /.claude/
 /.swarm/
+docker-compose.override.yml
 
 # debug
 npm-debug.log*

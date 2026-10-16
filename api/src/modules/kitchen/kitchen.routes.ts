@@ -7,6 +7,7 @@ import {
   UpdateKitchenOrderSchema,
 } from "./kitchen.schemas.js";
 import * as service from "./kitchen.service.js";
+import { authMiddleware, requireRoles } from "../../lib/auth-middleware.js";
 
 /**
  * Handlers HTTP de Órdenes de cocina. Mismo patrón que reservaciones:
@@ -14,6 +15,8 @@ import * as service from "./kitchen.service.js";
  */
 
 const kitchen = new Hono();
+
+kitchen.use("*", authMiddleware);
 
 const idParam = z.object({ id: z.string().uuid() });
 
@@ -37,7 +40,7 @@ kitchen.get("/", async (c) => {
 });
 
 // POST /orders — el mesero envía una comanda a cocina
-kitchen.post("/", async (c) => {
+kitchen.post("/", requireRoles("mesero", "gerente_operativo", "admin"), async (c) => {
   const parsed = CreateKitchenOrderSchema.safeParse(
     await c.req.json().catch(() => ({})),
   );
@@ -52,7 +55,10 @@ kitchen.post("/", async (c) => {
 });
 
 // PATCH /orders/:id — cocina avanza el estado de la orden
-kitchen.patch("/:id", async (c) => {
+kitchen.patch(
+  "/:id",
+  requireRoles("cocina", "chef", "mesero", "gerente_operativo", "admin"),
+  async (c) => {
   const id = idParam.safeParse({ id: c.req.param("id") });
   if (!id.success) return c.json({ error: "invalid_id" }, 400);
   const parsed = UpdateKitchenOrderSchema.safeParse(

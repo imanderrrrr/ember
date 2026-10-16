@@ -4,8 +4,10 @@
  */
 
 export interface KitchenOrderItem {
+  menuItemId?: string;
   qty: number;
   name: string;
+  priceCents?: number;
   mods?: string;
 }
 

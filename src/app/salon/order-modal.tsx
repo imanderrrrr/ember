@@ -62,8 +62,8 @@ export function OrderModal({
 }: {
   table: SalonTable;
   onClose: () => void;
-  /** Marca la mesa como "en cocina" en el backend. Promesa para feedback de loading. */
-  onSendToKitchen: () => Promise<void>;
+  /** Marca la mesa como "en cocina" y registra la comanda en el backend. */
+  onSendToKitchen: (cart: CartLine[]) => Promise<void>;
   sending: boolean;
 }) {
   const [activeCategory, setActiveCategory] = useState<string>("entradas");
@@ -175,7 +175,7 @@ export function OrderModal({
           sending={sending}
           canSend={cart.length > 0}
           onCancel={onClose}
-          onSend={() => void onSendToKitchen()}
+          onSend={() => void onSendToKitchen(cart)}
         />
       </div>
     </div>

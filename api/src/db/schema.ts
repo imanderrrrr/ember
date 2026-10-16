@@ -150,8 +150,10 @@ export type NewReservation = typeof reservations.$inferInsert;
  * `status`: nueva | preparacion | lista | entregada
  */
 export interface KitchenOrderItem {
+  menuItemId?: string;
   qty: number;
   name: string;
+  priceCents?: number;
   mods?: string;
 }
 
@@ -174,14 +176,58 @@ export const kitchenOrders = pgTable("kitchen_orders", {
 export type KitchenOrder = typeof kitchenOrders.$inferSelect;
 export type NewKitchenOrder = typeof kitchenOrders.$inferInsert;
 
+/* ─── Catálogo del Menú ───────────────────────────────────────────────────
+ * Fuente oficial de precios e información de platillos y bebidas.
+ * El frontend NUNCA dicta los precios: el backend consulta esta tabla para
+ * calcular subtotales, IVA y totales en centavos enteros.
+ */
+export const menuCategories = pgTable("menu_categories", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  icon: text("icon"),
+  ord: integer("ord").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const menuItems = pgTable("menu_items", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  description: text("description"),
+  priceCents: integer("price_cents").notNull(),
+  category: text("category").notNull(),
+  categoryId: text("category_id").references(() => menuCategories.id, { onDelete: "set null" }),
+  isActive: boolean("is_active").notNull().default(true),
+  ivaRate: integer("iva_rate").notNull().default(12),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const menuCategoriesRelations = relations(menuCategories, ({ many }) => ({
+  items: many(menuItems),
+}));
+
+export const menuItemsRelations = relations(menuItems, ({ one }) => ({
+  categoryRef: one(menuCategories, { fields: [menuItems.categoryId], references: [menuCategories.id] }),
+}));
+
+export type MenuCategory = typeof menuCategories.$inferSelect;
+export type NewMenuCategory = typeof menuCategories.$inferInsert;
+export type MenuItem = typeof menuItems.$inferSelect;
+export type NewMenuItem = typeof menuItems.$inferInsert;
+
 /* ─── Ventas / Cobros ─────────────────────────────────────────────────────
  * Cada cobro completado (la mesa pasa a "limpieza") inserta una venta aquí
  * con el desglose real de la cuenta. Es la fuente de verdad de "ventas del
  * turno" en el dashboard. Montos en CENTAVOS (enteros) para evitar drift de
  * punto flotante. `serviceDate` (yyyy-mm-dd) agrupa las ventas por turno.
+ * `orderId` vincula estrictamente la venta con la orden de cocina correspondiente.
  */
 export const sales = pgTable("sales", {
   id: uuid("id").defaultRandom().primaryKey(),
+  orderId: uuid("order_id").references(() => kitchenOrders.id, {
+    onDelete: "set null",
+  }),
   tableId: uuid("table_id").references(() => salonTables.id, {
     onDelete: "set null",
   }),
@@ -197,6 +243,16 @@ export const sales = pgTable("sales", {
   serviceDate: text("service_date").notNull(), // yyyy-mm-dd del turno
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const salesRelations = relations(sales, ({ one }) => ({
+  order: one(kitchenOrders, { fields: [sales.orderId], references: [kitchenOrders.id] }),
+  table: one(salonTables, { fields: [sales.tableId], references: [salonTables.id] }),
+}));
+
+export const kitchenOrdersRelations = relations(kitchenOrders, ({ one, many }) => ({
+  table: one(salonTables, { fields: [kitchenOrders.tableId], references: [salonTables.id] }),
+  sales: many(sales),
+}));
 
 export type Sale = typeof sales.$inferSelect;
 export type NewSale = typeof sales.$inferInsert;

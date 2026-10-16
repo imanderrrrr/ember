@@ -2,7 +2,13 @@ import "server-only";
 
 import { fetchFloorPlan, fetchReservations } from "@/app/salon/_lib/server-api";
 import { fetchKitchenOrders } from "@/app/cocina/_lib/orders-server";
-import { fetchSalesSummary } from "./sales-server";
+import {
+  fetchHourlySales,
+  fetchOperationalMetrics,
+  fetchSalesSummary,
+  type HourlySalesData,
+  type OperationalMetricsData,
+} from "./sales-server";
 import {
   STATUS_COLOR,
   STATUS_LABEL,
@@ -136,6 +142,8 @@ export interface DashboardData {
   ventas: DashboardVentas;
   /** Mesas esperando cuenta (cobro pendiente). */
   cuentasPendientes: number;
+  hourlySales: HourlySalesData;
+  operationalMetrics: OperationalMetricsData;
 }
 
 function moneyQ(q: number): string {
@@ -182,12 +190,15 @@ function slotMinutes(timeSlot: string): number {
 export async function getDashboardData(
   serviceDate: string,
 ): Promise<DashboardData> {
-  const [plan, orders, reservations, salesSummary] = await Promise.all([
-    fetchFloorPlan().catch(() => ({ zones: [], tables: [], shapes: [] })),
-    fetchKitchenOrders().catch(() => [] as KitchenOrderDTO[]),
-    fetchReservations({ date: serviceDate }).catch(() => []),
-    fetchSalesSummary(serviceDate),
-  ]);
+  const [plan, orders, reservations, salesSummary, hourlySales, operationalMetrics] =
+    await Promise.all([
+      fetchFloorPlan().catch(() => ({ zones: [], tables: [], shapes: [] })),
+      fetchKitchenOrders().catch(() => [] as KitchenOrderDTO[]),
+      fetchReservations({ date: serviceDate }).catch(() => []),
+      fetchSalesSummary(serviceDate),
+      fetchHourlySales(serviceDate),
+      fetchOperationalMetrics(serviceDate),
+    ]);
 
   const now = Date.now();
   const tables = plan.tables;
@@ -383,5 +394,7 @@ export async function getDashboardData(
     actividad,
     ventas,
     cuentasPendientes: counts.esperando,
+    hourlySales,
+    operationalMetrics,
   };
 }

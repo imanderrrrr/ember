@@ -3,9 +3,8 @@
 import { useLiveRefresh } from "./use-live-refresh";
 
 /**
- * Isla cliente mínima: monta el polling de `router.refresh()` sin obligar a
- * convertir toda una página de Server Components en cliente. Se coloca una vez
- * en la página (ej. el dashboard) y mantiene los datos del servidor "vivos".
+ * Isla cliente reactiva: suscribe a eventos en tiempo real (SSE) y dispara
+ * `router.refresh()` reactivamente sin polling ni recargas completas.
  */
 export function LiveRefresh({ intervalMs = 4000 }: { intervalMs?: number }) {
   useLiveRefresh(intervalMs);

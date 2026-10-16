@@ -1,4 +1,6 @@
 import * as repo from "./kitchen.repository.js";
+import { eventHub } from "../../lib/events.js";
+import { getMenuItemById, getMenuItemByName } from "../sales/sales.repository.js";
 import type { KitchenOrder, KitchenOrderItem } from "../../db/schema.js";
 
 /**
@@ -52,21 +54,54 @@ export async function createOrder(input: {
   zoneName: string;
   partySize?: number;
   mesero?: string | null;
-  items: KitchenOrderItem[];
+  items: Array<{
+    menuItemId?: string;
+    quantity?: number;
+    qty?: number;
+    name?: string;
+    mods?: string;
+  }>;
   station?: string;
   status?: string;
 }): Promise<KitchenOrderDTO> {
+  // Resolver items contra el catálogo oficial
+  const resolvedItems: KitchenOrderItem[] = [];
+  for (const item of input.items) {
+    const qty = item.quantity ?? item.qty ?? 1;
+    let menuItem = null;
+
+    if (item.menuItemId) {
+      menuItem = await getMenuItemById(item.menuItemId);
+    } else if (item.name) {
+      menuItem = await getMenuItemByName(item.name);
+    }
+
+    resolvedItems.push({
+      menuItemId: menuItem?.id ?? item.menuItemId,
+      name: menuItem?.name ?? item.name ?? "Platillo",
+      qty,
+      priceCents: menuItem?.priceCents,
+      mods: item.mods,
+    });
+  }
+
   const row = await repo.insertOrder({
     tableId: input.tableId ?? null,
     tableLabel: input.tableLabel,
     zoneName: input.zoneName,
     partySize: input.partySize ?? 1,
     mesero: input.mesero ?? null,
-    items: input.items,
+    items: resolvedItems,
     station: input.station ?? "platos",
     status: input.status ?? "nueva",
   });
-  return toDTO(row);
+
+  const dto = toDTO(row);
+
+  // Emisión de evento en tiempo real
+  eventHub.emitEvent("order:created", dto);
+
+  return dto;
 }
 
 export async function updateStatus(
@@ -77,5 +112,10 @@ export async function updateStatus(
   if (!row) {
     throw new DomainError("order_not_found", "Orden no encontrada", 404);
   }
-  return toDTO(row);
+  const dto = toDTO(row);
+
+  // Emisión de evento en tiempo real
+  eventHub.emitEvent("order:status_updated", dto);
+
+  return dto;
 }

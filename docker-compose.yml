@@ -50,6 +50,8 @@ services:
       - DATABASE_URL=postgres://ember:ember@db:5432/ember
       # Evita que pnpm 11 intente purgar el modules dir al iniciar sin TTY.
       - CI=true
+      # Secret compartido para validar JWTs y endpoints internos.
+      - AUTH_SECRET=${AUTH_SECRET:-dev-secret-change-me-with-openssl-rand-base64-32}
       # SMTP para los correos de confirmación de reserva (desde el .env raíz).
       - SMTP_HOST=${SMTP_HOST:-}
       - SMTP_PORT=${SMTP_PORT:-465}

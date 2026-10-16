@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { UserMenu } from "@/app/dashboard/user-menu";
 import { updateTable } from "@/app/salon/_lib/client-api";
-import { useLiveRefresh } from "@/lib/use-live-refresh";
+import { useRealtimeEvents } from "@/lib/use-realtime-events";
 import { updateKitchenOrder } from "./_lib/orders";
 import {
   STATION_LABEL,
@@ -49,10 +49,12 @@ export function KdsBoard({
   const [nowMs, setNowMs] = useState(0);
   const [prevInit, setPrevInit] = useState(initialTickets);
 
-  // Polling: re-consulta las órdenes del servidor sin recargar. Cuando el
-  // mesero envía un pedido nuevo, aparece aquí solo; cuando otro cocinero
-  // avanza un estado, también se refleja.
-  useLiveRefresh(4000);
+  // Sincronización en tiempo real vía SSE: re-consulta las órdenes del servidor
+  // únicamente cuando un mesero crea una comanda ("order:created") o se actualiza ("order:status_updated").
+  useRealtimeEvents({
+    events: ["order:created", "order:status_updated"],
+    refreshOnEvent: true,
+  });
 
   // Reloj para los cronómetros: el cálculo de "ahora" vive en el callback del
   // intervalo (no en el render ni síncrono en el effect), manteniendo el render

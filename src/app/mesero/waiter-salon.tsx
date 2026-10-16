@@ -20,7 +20,7 @@ import { FloorPlanCanvas } from "@/app/salon/restaurant-manager";
 import { UserMenu } from "@/app/dashboard/user-menu";
 import { formatQ } from "@/app/salon/_lib/menu";
 import { updateTable } from "@/app/salon/_lib/client-api";
-import { useLiveRefresh } from "@/lib/use-live-refresh";
+import { useRealtimeEvents } from "@/lib/use-realtime-events";
 import {
   STATUS_COLOR,
   STATUS_LABEL,
@@ -58,9 +58,11 @@ export function WaiterSalon({
   billByTable: Record<string, Bill>;
 }) {
   const router = useRouter();
-  // El mapa del mesero refleja en vivo los cambios de estado (cocina marca
-  // listo, mesas que se liberan, etc.) sin recargar.
-  useLiveRefresh(4000);
+  // Sincronización en vivo vía SSE cuando cocina avanza pedidos o cambian estados de mesas
+  useRealtimeEvents({
+    events: ["table:status_updated", "order:created", "order:status_updated", "sale:recorded"],
+    refreshOnEvent: true,
+  });
 
   const zones = useMemo(
     () => [...plan.zones].sort((a, b) => a.ord - b.ord),

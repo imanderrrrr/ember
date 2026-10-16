@@ -1,5 +1,6 @@
 import "server-only";
 import type { KitchenOrderDTO } from "./orders";
+import { getAuthHeaders } from "@/lib/server-token";
 
 /**
  * Fetch server-side de órdenes de cocina (usa la red interna del docker).
@@ -12,12 +13,14 @@ export async function fetchKitchenOrders(
   statuses?: string[],
 ): Promise<KitchenOrderDTO[]> {
   const q = statuses && statuses.length > 0 ? `?status=${statuses.join(",")}` : "";
-  const res = await fetch(`${API_URL}/orders${q}`, { cache: "no-store" }).catch(
-    (err) => {
-      console.error("[cocina] fetchKitchenOrders failed:", err);
-      return null;
-    },
-  );
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_URL}/orders${q}`, {
+    cache: "no-store",
+    headers,
+  }).catch((err) => {
+    console.error("[cocina] fetchKitchenOrders failed:", err);
+    return null;
+  });
   if (!res || !res.ok) return [];
   return res.json();
 }

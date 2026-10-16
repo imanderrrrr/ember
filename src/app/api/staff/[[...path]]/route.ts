@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getAuthHeaders } from "@/lib/server-token";
 
 /**
  * Proxy autenticado para `/api/staff/*` → api Hono `/staff/*`.
@@ -22,7 +23,8 @@ async function proxy(
   const segments = path && path.length > 0 ? path.join("/") : "";
   const target = `${API_URL}/staff${segments ? "/" + segments : ""}${url.search}`;
 
-  const res = await fetch(target, { cache: "no-store" }).catch((err) => {
+  const headers = await getAuthHeaders(session);
+  const res = await fetch(target, { cache: "no-store", headers }).catch((err) => {
     console.error("[staff proxy] fetch failed:", err);
     return null;
   });

@@ -10,8 +10,10 @@ const nextConfig: NextConfig = {
   // peticiones de HMR/_next al abrir la app por la IP o el nombre del equipo.
   // `*.local` cubre el nombre mDNS estable (p. ej. MacBook-Pro-de-Anderson.local);
   // agrega aquí la IP de tu equipo si accedes por IP y cambia con el tiempo.
+  // `*.trycloudflare.com` permite abrir la app a través del túnel Cloudflare
+  // (quick tunnel) sin que Next bloquee HMR/_next/RSC como cross-origin.
   // (En producción —`docker compose -f docker-compose.prod.yml`— no aplica.)
-  allowedDevOrigins: ["*.local", "192.168.1.17"],
+  allowedDevOrigins: ["*.local", "192.168.1.17", "*.trycloudflare.com"],
 };
 
 export default nextConfig;

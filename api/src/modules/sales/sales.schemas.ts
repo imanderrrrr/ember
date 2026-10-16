@@ -9,12 +9,15 @@ import { z } from "zod";
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 const ItemSchema = z.object({
-  qty: z.number().int().positive(),
-  name: z.string().min(1),
+  menuItemId: z.string().min(1).optional(),
+  quantity: z.number().int().positive().optional(),
+  qty: z.number().int().positive().optional(),
+  name: z.string().min(1).optional(),
   mods: z.string().optional(),
 });
 
 export const CreateSaleSchema = z.object({
+  orderId: z.string().uuid().nullable().optional(),
   tableId: z.string().uuid().nullable().optional(),
   tableLabel: z.string().min(1),
   zoneName: z.string().min(1),
@@ -25,7 +28,7 @@ export const CreateSaleSchema = z.object({
     .optional(),
   subtotalCents: z.number().int().nonnegative().optional(),
   ivaCents: z.number().int().nonnegative().optional(),
-  totalCents: z.number().int().nonnegative(),
+  totalCents: z.number().int().nonnegative().optional(),
   items: z.array(ItemSchema).optional(),
   serviceDate: z.string().regex(DATE_RE),
 });

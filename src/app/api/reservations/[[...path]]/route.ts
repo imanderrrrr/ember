@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getAuthHeaders } from "@/lib/server-token";
 
 /**
- * Proxy autenticado para todo `/api/reservations/*`. Mismo patrón que el
- * proxy del salón: el browser nunca pega directo al Hono api; pasa por
- * acá donde validamos sesión.
+ * Proxy autenticado para todo `/api/reservations/*`.
+ * Reenvía Bearer JWT con identidad y rol para validación y RBAC.
  */
 
 const API_URL = process.env.API_URL ?? "http://api:3001";
@@ -25,9 +25,10 @@ async function proxy(
   const segments = path && path.length > 0 ? path.join("/") : "";
   const target = `${API_URL}/reservations${segments ? "/" + segments : ""}${url.search}`;
 
+  const headers = await getAuthHeaders(session);
   const init: RequestInit = {
     method: req.method,
-    headers: { "Content-Type": "application/json" },
+    headers,
   };
   if (req.method !== "GET" && req.method !== "DELETE") {
     init.body = await req.text();

@@ -1,4 +1,5 @@
 import * as repo from "./salon.repository.js";
+import { eventHub } from "../../lib/events.js";
 import type {
   Zone,
   SalonTable as TableRow,
@@ -166,7 +167,9 @@ export async function createTable(input: {
   const zone = await repo.findZoneById(input.zoneId);
   if (!zone) throw new DomainError("zone_not_found", "Zona no encontrada", 404);
   const row = await repo.insertTable(input);
-  return toTableDTO(row);
+  const dto = toTableDTO(row);
+  eventHub.emitEvent("table:status_updated", dto);
+  return dto;
 }
 
 export async function updateTable(
@@ -193,12 +196,15 @@ export async function updateTable(
   }
   const row = await repo.updateTableById(id, input);
   if (!row) throw new DomainError("table_not_found", "Mesa no encontrada", 404);
-  return toTableDTO(row);
+  const dto = toTableDTO(row);
+  eventHub.emitEvent("table:status_updated", dto);
+  return dto;
 }
 
 export async function deleteTable(id: string): Promise<void> {
   const row = await repo.deleteTableById(id);
   if (!row) throw new DomainError("table_not_found", "Mesa no encontrada", 404);
+  eventHub.emitEvent("table:status_updated", { id, status: "deleted" });
 }
 
 /* ─── Shapes ─── */

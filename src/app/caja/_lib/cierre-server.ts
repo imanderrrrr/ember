@@ -1,5 +1,6 @@
 import "server-only";
 import type { CierreData } from "./cierre";
+import { getAuthHeaders } from "@/lib/server-token";
 
 /**
  * Fetch server-side de los datos del cierre de caja (red interna del docker).
@@ -26,8 +27,10 @@ const EMPTY = (serviceDate: string): CierreData => ({
 });
 
 export async function fetchCierre(serviceDate: string): Promise<CierreData> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_URL}/sales/cierre?date=${serviceDate}`, {
     cache: "no-store",
+    headers,
   }).catch((err) => {
     console.error("[caja] fetchCierre failed:", err);
     return null;

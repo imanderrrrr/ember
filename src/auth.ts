@@ -25,9 +25,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // En docker, API_URL=http://api:3001 (DNS interno).
         // En dev host (pnpm dev), cae al puerto expuesto del container api.
         const apiUrl = process.env.API_URL ?? "http://localhost:3001";
+        const secret =
+          process.env.AUTH_SECRET ??
+          "dev-secret-change-me-with-openssl-rand-base64-32";
         const res = await fetch(`${apiUrl}/auth/verify`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-secret": secret,
+          },
           body: JSON.stringify({
             email: credentials.email,
             password: credentials.password,

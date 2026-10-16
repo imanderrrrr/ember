@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { asc, eq } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
+import { authMiddleware } from "../../lib/auth-middleware.js";
 
 /**
  * Staff — listado de personal por rol. Lo usa el wizard de reservas para
@@ -10,6 +11,8 @@ import { users } from "../../db/schema.js";
  *   GET /staff?role=mesero  → [{ id, name, avatarInitials, role }]
  */
 const staff = new Hono();
+
+staff.use("*", authMiddleware);
 
 staff.get("/", async (c) => {
   const role = c.req.query("role") || "mesero";

@@ -141,8 +141,11 @@ export function MesaActiva({
         zoneName,
         partySize: comensales,
         mesero: waiterName,
-        station: stationForItems(cart.map((l) => l.name)),
-        items: cart.map((l) => ({ qty: l.qty, name: l.name })),
+        items: cart.map((l) => ({
+          menuItemId: l.productId,
+          qty: l.qty,
+          name: l.name,
+        })),
       });
       // 2) La mesa pasa a "cocina".
       await updateTable(table.id, { status: "cocina" });

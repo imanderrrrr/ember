@@ -9,6 +9,7 @@ import type { KitchenOrderDTO } from "@/app/cocina/_lib/orders";
 import type { SalonTable } from "@/app/salon/_lib/types";
 
 export interface BillLine {
+  menuItemId?: string;
   name: string;
   qty: number;
   unitPrice: number;
@@ -66,7 +67,11 @@ export function buildBill(
         existing.qty += item.qty;
         existing.lineTotal += unit * item.qty;
       } else {
+        const catalogItem = Object.values(CATALOG)
+          .flat()
+          .find((p) => p.name.toLowerCase().trim() === item.name.toLowerCase().trim());
         lineMap.set(key, {
+          menuItemId: item.menuItemId ?? catalogItem?.id,
           name: item.name,
           qty: item.qty,
           unitPrice: unit,

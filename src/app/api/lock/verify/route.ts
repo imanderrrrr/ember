@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getAuthHeaders } from "@/lib/server-token";
 
 /**
  * POST /api/lock/verify
  *
  * Proxy autenticado: lee la sesión Auth.js para obtener el userId, luego
- * delega al api (`/auth/verify-pin`) la validación del PIN contra argon2.
- *
- * El frontend nunca ve userId directamente — viene del JWT en la cookie.
- * Si no hay sesión, 401.
+ * delega al api (`/auth/verify-pin`) la validación del PIN contra argon2
+ * con token firmado de autenticación.
  */
 export async function POST(req: Request) {
   const session = await auth();
@@ -23,9 +22,10 @@ export async function POST(req: Request) {
   }
 
   const apiUrl = process.env.API_URL ?? "http://api:3001";
+  const headers = await getAuthHeaders(session);
   const res = await fetch(`${apiUrl}/auth/verify-pin`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ userId: session.user.id, pin }),
   }).catch((err) => {
     console.error("[lock/verify] api fetch failed:", err);

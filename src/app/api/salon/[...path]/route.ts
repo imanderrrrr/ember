@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getAuthHeaders } from "@/lib/server-token";
 
 /**
  * Proxy autenticado para todo `/api/salon/*`.
  *
  * Reglas:
  *  - Verifica que haya sesión Auth.js. Sin ella, 401 sin tocar el api.
- *  - Reenvía method/body al api Hono via `API_URL`.
- *  - Devuelve el body crudo del api con su status — no transforma errores.
- *
- * Nota: para Fase 2 cualquier usuario autenticado puede editar el salón.
- * Cuando agreguemos RBAC vamos a chequear `session.user.role` aquí.
+ *  - Mints y reenvía token JWT firmado (Bearer) con la identidad y rol del usuario.
+ *  - Devuelve el body del api con su status (incluyendo 403 Forbidden por RBAC).
  */
 
 const API_URL = process.env.API_URL ?? "http://api:3001";
@@ -25,9 +23,10 @@ async function proxy(req: Request, ctx: { params: Promise<{ path: string[] }> })
   const url = new URL(req.url);
   const target = `${API_URL}/salon/${path.join("/")}${url.search}`;
 
+  const headers = await getAuthHeaders(session);
   const init: RequestInit = {
     method: req.method,
-    headers: { "Content-Type": "application/json" },
+    headers,
   };
   if (req.method !== "GET" && req.method !== "DELETE") {
     init.body = await req.text();
