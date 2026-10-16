@@ -12,6 +12,7 @@ import {
 } from "./salon.schemas.js";
 import * as service from "./salon.service.js";
 import { authMiddleware, requireRoles } from "../../lib/auth-middleware.js";
+import { validateTableUpdatePermissions, SalonPolicyError } from "./salon.policy.js";
 
 /**
  * Handlers HTTP del módulo Salón.
@@ -110,8 +111,16 @@ salon.patch(
       return c.json({ error: "invalid_body", issues: parsed.error.issues }, 400);
     }
     try {
+      const user = c.get("user");
+      validateTableUpdatePermissions(user.role, parsed.data);
       return c.json(await service.updateTable(id.data.id, parsed.data));
     } catch (err) {
+      if (err instanceof SalonPolicyError) {
+        return c.json(
+          { error: err.code, message: err.message },
+          err.status as ContentfulStatusCode,
+        );
+      }
       return domainErrorResponse(c, err);
     }
   },

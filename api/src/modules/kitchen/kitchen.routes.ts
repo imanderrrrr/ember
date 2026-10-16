@@ -21,7 +21,7 @@ kitchen.use("*", authMiddleware);
 const idParam = z.object({ id: z.string().uuid() });
 
 function domainErrorResponse(c: Context, err: unknown) {
-  if (err instanceof service.DomainError) {
+  if (err instanceof service.DomainError || err instanceof service.OrderPolicyError) {
     return c.json(
       { error: err.code, message: err.message },
       err.status as ContentfulStatusCode,

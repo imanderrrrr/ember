@@ -15,25 +15,8 @@ import { sendReservationConfirmation } from "../../lib/mailer.js";
  * vive acá.
  */
 
-export interface ReservationDTO {
-  id: string;
-  tableId: string | null;
-  date: string;
-  timeSlot: string;
-  partySize: number;
-  zoneName: string;
-  tableLabel: string;
-  customerName: string;
-  customerPhone: string | null;
-  customerEmail: string | null;
-  occasion: string | null;
-  restrictions: string[];
-  notes: string | null;
-  mesero: string | null;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { ReservationDTO } from "@ember/types";
+export type { ReservationDTO };
 
 function toDTO(r: Reservation): ReservationDTO {
   return {

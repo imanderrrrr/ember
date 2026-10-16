@@ -1,39 +1,16 @@
-/**
- * Tipos y helpers de cliente para Órdenes de cocina. Las mutaciones pasan por
- * el proxy autenticado `/api/orders/*` (solo funcionan en el navegador).
- */
+import type {
+  KitchenOrderItem,
+  KitchenOrderDTO,
+  CreateKitchenOrderPayload,
+  KitchenOrderStatus,
+} from "@ember/types";
 
-export interface KitchenOrderItem {
-  menuItemId?: string;
-  qty: number;
-  name: string;
-  priceCents?: number;
-  mods?: string;
-}
-
-export interface KitchenOrderDTO {
-  id: string;
-  tableId: string | null;
-  tableLabel: string;
-  zoneName: string;
-  partySize: number;
-  mesero: string | null;
-  items: KitchenOrderItem[];
-  station: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateKitchenOrderPayload {
-  tableId?: string | null;
-  tableLabel: string;
-  zoneName: string;
-  partySize?: number;
-  mesero?: string | null;
-  station?: string;
-  items: KitchenOrderItem[];
-}
+export type {
+  KitchenOrderItem,
+  KitchenOrderDTO,
+  CreateKitchenOrderPayload,
+  KitchenOrderStatus,
+};
 
 async function jsonOrThrow<T>(promise: Promise<Response>): Promise<T> {
   const res = await promise;
@@ -67,7 +44,7 @@ export async function createKitchenOrder(
 /** Avanza el estado de una orden desde el KDS. */
 export async function updateKitchenOrder(
   id: string,
-  status: "nueva" | "preparacion" | "lista" | "entregada",
+  status: KitchenOrderStatus | string,
 ): Promise<KitchenOrderDTO> {
   return jsonOrThrow<KitchenOrderDTO>(
     fetch(`/api/orders/${id}`, {

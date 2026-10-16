@@ -7,19 +7,8 @@ import type { KitchenOrder, KitchenOrderItem } from "../../db/schema.js";
  * Service de Órdenes de cocina. Mapea DB ↔ wire y centraliza la lógica.
  */
 
-export interface KitchenOrderDTO {
-  id: string;
-  tableId: string | null;
-  tableLabel: string;
-  zoneName: string;
-  partySize: number;
-  mesero: string | null;
-  items: KitchenOrderItem[];
-  station: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { KitchenOrderDTO } from "@ember/types";
+export type { KitchenOrderDTO };
 
 function toDTO(o: KitchenOrder): KitchenOrderDTO {
   return {
@@ -104,10 +93,23 @@ export async function createOrder(input: {
   return dto;
 }
 
+import {
+  assertValidOrderStatusTransition,
+  OrderPolicyError,
+} from "./kitchen.policy.js";
+
+export { OrderPolicyError };
+
 export async function updateStatus(
   id: string,
   status: string,
 ): Promise<KitchenOrderDTO> {
+  const currentOrders = await repo.listOrders();
+  const existing = currentOrders.find((o) => o.id === id);
+  if (existing) {
+    assertValidOrderStatusTransition(existing.status, status);
+  }
+
   const row = await repo.updateOrderStatus(id, status);
   if (!row) {
     throw new DomainError("order_not_found", "Orden no encontrada", 404);

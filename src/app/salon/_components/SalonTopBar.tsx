@@ -12,6 +12,7 @@ interface SalonTopBarProps {
   zones: Zone[];
   reservations: ReservationDTO[];
   onPickResult: (tableId: string, zoneId: string) => void;
+  canEdit?: boolean;
 }
 
 export function SalonTopBar({
@@ -19,6 +20,7 @@ export function SalonTopBar({
   zones,
   reservations,
   onPickResult,
+  canEdit = false,
 }: SalonTopBarProps) {
   return (
     <header className="animate-salon-topbar flex h-[72px] w-full items-center justify-between border-b border-[#EDE6DC] bg-white px-7">
@@ -74,13 +76,15 @@ export function SalonTopBar({
           onPickResult={onPickResult}
         />
         <span className="h-7 w-px bg-[#EDE6DC]" />
-        <Link
-          href="/salon/edit"
-          className="flex items-center gap-2 rounded-[10px] border border-[#1F1F1F] bg-white px-4 py-2.5 hover:bg-[#F7F3EE]"
-        >
-          <LayoutGrid className="size-3.5 text-[#1F1F1F]" strokeWidth={1.8} />
-          <span className="text-[13px] font-medium">Modo edición</span>
-        </Link>
+        {canEdit && (
+          <Link
+            href="/salon/edit"
+            className="flex items-center gap-2 rounded-[10px] border border-[#1F1F1F] bg-white px-4 py-2.5 hover:bg-[#F7F3EE]"
+          >
+            <LayoutGrid className="size-3.5 text-[#1F1F1F]" strokeWidth={1.8} />
+            <span className="text-[13px] font-medium">Modo edición</span>
+          </Link>
+        )}
         <Link
           href="/reservas/nueva"
           className="flex items-center gap-2 rounded-[10px] bg-[#E67E22] px-[18px] py-2.5 transition-colors hover:bg-[#c2410c]"

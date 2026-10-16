@@ -11,7 +11,7 @@ import {
   type NewSale,
 } from "../../db/schema.js";
 
-type DbOrTx = any;
+type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
  * Capa Drizzle de Ventas. Admite un ejecutor opcional `tx` para

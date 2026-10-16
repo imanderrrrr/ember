@@ -6,12 +6,9 @@
  * convierten a centavos (enteros) al enviar.
  */
 
-export interface SalesSummary {
-  serviceDate: string;
-  totalCents: number;
-  count: number;
-  goalCents: number | null;
-}
+import type { SalesSummary } from "@ember/types";
+
+export type { SalesSummary };
 
 export interface CreateSaleInput {
   orderId?: string | null;

@@ -10,8 +10,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
-    "outDir": "dist",
-    "rootDir": "."
+    "paths": {
+      "@ember/types": ["../packages/types/src/index.ts"],
+      "@ember/types/*": ["../packages/types/src/*"]
+    },
+    "outDir": "dist"
   },
   "include": ["src/**/*", "scripts/**/*", "drizzle.config.ts"]
 }

@@ -25,6 +25,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@ember/types": [
+        "./packages/types/src/index.ts"
+      ],
+      "@ember/types/*": [
+        "./packages/types/src/*"
       ]
     }
   },

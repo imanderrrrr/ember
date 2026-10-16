@@ -9,7 +9,7 @@ export type DomainEventType =
   | "table:status_updated"
   | "sale:recorded";
 
-export interface RealtimeEvent<T = any> {
+export interface RealtimeEvent<T = unknown> {
   type: DomainEventType;
   data: T;
   timestamp?: string;
@@ -56,10 +56,12 @@ export function useRealtimeEvents({
   const esRef = useRef<EventSource | null>(null);
 
   const onEventRef = useRef(onEvent);
-  onEventRef.current = onEvent;
-
   const eventsFilterRef = useRef(events);
-  eventsFilterRef.current = events;
+
+  useEffect(() => {
+    onEventRef.current = onEvent;
+    eventsFilterRef.current = events;
+  });
 
   const triggerRefresh = useCallback(() => {
     if (!refreshOnEvent) return;

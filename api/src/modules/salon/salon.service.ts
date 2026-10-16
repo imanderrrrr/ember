@@ -16,47 +16,16 @@ import type {
 
 const MAX_ZONES = 20;
 
-export interface ZoneDTO {
-  id: string;
-  name: string;
-  ord: number;
-}
+import type {
+  ZoneDTO,
+  TableDTO,
+  ShapeDTO,
+  FloorPlanDTO,
+  TableStatus,
+  ShapeKind,
+} from "@ember/types";
 
-export interface TableDTO {
-  id: string;
-  zoneId: string;
-  label: string;
-  shape: "round" | "rect";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  seats: number;
-  rotation: number;
-  status: string;
-  // Ficha rápida — nullables: no toda mesa tiene cliente/notas asignados.
-  customerName: string | null;
-  partySize: number | null;
-  notes: string | null;
-}
-
-export interface ShapeDTO {
-  id: string;
-  zoneId: string | null;
-  kind: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number;
-  label: string | null;
-}
-
-export interface FloorPlanDTO {
-  zones: ZoneDTO[];
-  tables: TableDTO[];
-  shapes: ShapeDTO[];
-}
+export type { ZoneDTO, TableDTO, ShapeDTO, FloorPlanDTO };
 
 function toZoneDTO(z: Zone): ZoneDTO {
   return { id: z.id, name: z.name, ord: z.ord };
@@ -74,7 +43,7 @@ function toTableDTO(t: TableRow): TableDTO {
     height: t.height,
     seats: t.seats,
     rotation: t.rotation,
-    status: t.status,
+    status: t.status as TableStatus,
     customerName: t.customerName,
     partySize: t.partySize,
     notes: t.notes,
@@ -85,7 +54,7 @@ function toShapeDTO(s: ShapeRow): ShapeDTO {
   return {
     id: s.id,
     zoneId: s.zoneId,
-    kind: s.kind,
+    kind: s.kind as ShapeKind,
     x: s.x,
     y: s.y,
     width: s.width,

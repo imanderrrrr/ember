@@ -11,6 +11,24 @@ const OPENING_CASH_CENTS = 150000;
 const METHODS = ["efectivo", "tarjeta", "transferencia", "mixto"] as const;
 type Method = (typeof METHODS)[number];
 
+import {
+  CalculationError,
+  calculateLineItem,
+  calculateSaleTotals,
+  calculateRetroTotals,
+  verifyPriceIntegrity,
+  calculateCashClose,
+} from "./sales.calculator.js";
+
+export {
+  CalculationError,
+  calculateLineItem,
+  calculateSaleTotals,
+  calculateRetroTotals,
+  verifyPriceIntegrity,
+  calculateCashClose,
+};
+
 export class DomainError extends Error {
   constructor(public code: string, message: string, public status = 400) {
     super(message);
@@ -22,32 +40,25 @@ export class DomainError extends Error {
  * turno (ventas acumuladas + meta).
  */
 
-export interface SaleDTO {
-  id: string;
-  orderId: string | null;
-  tableId: string | null;
-  tableLabel: string;
-  zoneName: string;
-  mesero: string | null;
-  cashier: string | null;
-  method: string;
-  subtotalCents: number;
-  ivaCents: number;
-  totalCents: number;
-  items: KitchenOrderItem[];
-  serviceDate: string;
-  createdAt: string;
-}
+import type {
+  SaleDTO,
+  SalesSummaryDTO,
+  HourlySalesItemDTO,
+  HourlySalesDTO,
+  MethodBreakdown,
+  CashCloseDTO,
+  CierreDTO,
+} from "@ember/types";
 
-export interface SalesSummaryDTO {
-  serviceDate: string;
-  /** Ventas acumuladas del turno, en centavos. */
-  totalCents: number;
-  /** Número de cobros registrados. */
-  count: number;
-  /** Meta del turno en centavos, o null si el gerente no la ha fijado. */
-  goalCents: number | null;
-}
+export type {
+  SaleDTO,
+  SalesSummaryDTO,
+  HourlySalesItemDTO,
+  HourlySalesDTO,
+  MethodBreakdown,
+  CashCloseDTO,
+  CierreDTO,
+};
 
 function toDTO(s: Sale): SaleDTO {
   return {
@@ -270,40 +281,6 @@ export async function setGoal(
 
 /* ─── Cierre de caja ─────────────────────────────────────────────────────── */
 
-export interface MethodBreakdown {
-  cents: number;
-  count: number;
-}
-
-export interface CashCloseDTO {
-  id: string;
-  serviceDate: string;
-  openingCents: number;
-  expectedCashCents: number;
-  countedCashCents: number;
-  differenceCents: number;
-  totalCents: number;
-  salesCount: number;
-  byMethod: Record<string, MethodBreakdown>;
-  notes: string | null;
-  cashier: string | null;
-  createdAt: string;
-}
-
-export interface CierreDTO {
-  serviceDate: string;
-  totalCents: number;
-  subtotalCents: number;
-  ivaCents: number;
-  count: number;
-  byMethod: Record<Method, MethodBreakdown>;
-  openingCents: number;
-  expectedCashCents: number;
-  goalCents: number | null;
-  closed: boolean;
-  close: CashCloseDTO | null;
-}
-
 function emptyByMethod(): Record<Method, MethodBreakdown> {
   return {
     efectivo: { cents: 0, count: 0 },
@@ -371,15 +348,18 @@ export async function closeShift(input: {
 }): Promise<CierreDTO> {
   const cierre = await getCierre(input.serviceDate);
   const opening = input.openingCents ?? OPENING_CASH_CENTS;
-  const expected = opening + cierre.byMethod.efectivo.cents;
-  const difference = input.countedCashCents - expected;
+  const cashCheck = calculateCashClose({
+    openingCents: opening,
+    cashSalesCents: cierre.byMethod.efectivo?.cents ?? 0,
+    countedCashCents: input.countedCashCents,
+  });
 
   await repo.insertClose({
     serviceDate: input.serviceDate,
-    openingCents: opening,
-    expectedCashCents: expected,
-    countedCashCents: input.countedCashCents,
-    differenceCents: difference,
+    openingCents: cashCheck.openingCents,
+    expectedCashCents: cashCheck.expectedCashCents,
+    countedCashCents: cashCheck.countedCashCents,
+    differenceCents: cashCheck.differenceCents,
     totalCents: cierre.totalCents,
     salesCount: cierre.count,
     byMethod: cierre.byMethod,
@@ -390,23 +370,7 @@ export async function closeShift(input: {
   return getCierre(input.serviceDate);
 }
 
-export interface HourlySalesItemDTO {
-  hour: number;
-  totalCents: number;
-  ticketCount: number;
-  formattedHour: string;
-  totalQ: number;
-}
 
-export interface HourlySalesDTO {
-  serviceDate: string;
-  items: HourlySalesItemDTO[];
-  peakHour: number | null;
-  peakHourLabel: string | null;
-  totalCents: number;
-  totalQ: number;
-  ticketCount: number;
-}
 
 export async function getHourlySales(serviceDate: string): Promise<HourlySalesDTO> {
   const rows = await repo.hourlySalesByDate(serviceDate);

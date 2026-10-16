@@ -24,6 +24,8 @@ WORKDIR /app
 ###############################################################################
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/types/package.json ./packages/types/
+COPY api/package.json ./api/
 # --ignore-scripts: skip native build scripts (sharp, unrs-resolver). pnpm 11 fails
 # the install when these aren't explicitly approved; for our containerized dev/build
 # they're not required (Next 16's image optimizer has a JS fallback for sharp).

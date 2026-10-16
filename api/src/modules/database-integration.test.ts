@@ -7,13 +7,11 @@ import { db, pgClient } from "../db/index.js";
 import {
   users,
   salonTables,
-  zones,
   kitchenOrders,
   sales,
   shiftGoals,
   cashCloses,
   reservations,
-  menuItems,
 } from "../db/schema.js";
 import { eventHub } from "../lib/events.js";
 import { getAuthSecret } from "../lib/auth-middleware.js";
@@ -563,7 +561,7 @@ test("Integration Prioridad 2: Atomicidad ACID y Rollback Total en Cobro de Mesa
 });
 
 test("Integration Prioridad 3: EventHub y Realtime SSE emite eventos de dominio", async () => {
-  const eventsReceived: Array<{ type: string; data: any }> = [];
+  const eventsReceived: Array<{ type: string; data: unknown }> = [];
 
   const unsubscribe = eventHub.subscribe((evt) => {
     eventsReceived.push({ type: evt.type, data: evt.data });

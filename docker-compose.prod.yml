@@ -8,7 +8,7 @@
 #
 # ── Uso con imágenes locales ────────────────────────────────────────────────
 #   docker build --target runner -t ember-web:prod .
-#   docker build --target runner -t ember-api:prod ./api
+#   docker build --target runner -f api/Dockerfile -t ember-api:prod .
 #   AUTH_SECRET=$(openssl rand -base64 32) docker compose -f docker-compose.prod.yml up -d
 #
 # ── Uso con imágenes publicadas en Docker Hub (reemplaza <usuario>) ──────────
@@ -29,8 +29,11 @@ services:
       - POSTGRES_USER=ember
       - POSTGRES_PASSWORD=ember
       - POSTGRES_DB=ember
-    ports:
-      - "${DB_PORT:-5432}:5432"
+    # Seguridad en Producción: La base de datos queda aislada en la red interna de Docker.
+    # NO se mapea al host ni a internet por defecto para prevenir ataques de fuerza bruta.
+    # Los servicios internos (api, migrate) se comunican directamente vía DNS 'db:5432'.
+    expose:
+      - "5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:

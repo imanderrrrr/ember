@@ -16,6 +16,11 @@ export default async function SalonEditPage() {
     redirect("/login");
   }
 
+  const role = (session?.user as { role?: string })?.role;
+  if (role !== "gerente_operativo" && role !== "admin") {
+    redirect("/salon");
+  }
+
   const initial = await fetchFloorPlan();
 
   return <Editor initial={initial} />;

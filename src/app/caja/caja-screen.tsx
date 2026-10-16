@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { UserMenu } from "@/app/dashboard/user-menu";
 import { useRealtimeEvents } from "@/lib/use-realtime-events";
-import { updateTable } from "@/app/salon/_lib/client-api";
 import { formatQ, type Bill } from "./_lib/billing";
 import { SplitBillModal, type SplitPart } from "./split-bill-modal";
 import { createSale, todayServiceDate } from "@/lib/sales-client";
@@ -172,7 +171,7 @@ export function CajaScreen({
         iva: selectedBill.iva,
         total: selectedBill.total,
         items: selectedBill.lines.map((l) => ({
-          menuItemId: (l as any).menuItemId,
+          menuItemId: l.menuItemId,
           qty: l.qty,
           name: l.name,
           mods: l.mods,

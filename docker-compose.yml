@@ -36,14 +36,17 @@ services:
 
   api:
     build:
-      context: ./api
+      context: .
+      dockerfile: api/Dockerfile
       target: dev
     container_name: ember-api
     ports:
       - "3001:3001"
     volumes:
-      - ./api:/app
+      - ./api:/app/api
+      - ./packages/types:/app/packages/types
       - /app/node_modules
+      - /app/api/node_modules
     environment:
       - NODE_ENV=development
       - PORT=3001

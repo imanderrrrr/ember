@@ -7,12 +7,8 @@ import { getAuthHeaders } from "@/lib/server-token";
  */
 const API_URL = process.env.API_URL ?? "http://api:3001";
 
-export interface SalesSummary {
-  serviceDate: string;
-  totalCents: number;
-  count: number;
-  goalCents: number | null;
-}
+import type { SalesSummary } from "@ember/types";
+export type { SalesSummary };
 
 export async function fetchSalesSummary(
   serviceDate: string,

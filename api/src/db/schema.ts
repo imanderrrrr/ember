@@ -2,19 +2,32 @@ import { boolean, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle
 import { relations } from "drizzle-orm";
 
 /**
- * `users` — Fase 2 mínima. `role` queda como string simple por ahora.
- * Cuando agreguemos RBAC vamos a mover a tablas separadas y este campo
- * se vuelve slug del rol primario o se deprecia.
+ * `users` — Modelo de usuarios con RBAC integrado.
+ * Roles reconocidos:
+ *   - 'gerente_operativo' / 'admin': acceso administrativo total (layout, cierres, metas, catálogo).
+ *   - 'cajero': cobros, facturación, cierres de caja.
+ *   - 'mesero': atención de mesas, toma de comandas, fichas operativas.
+ *   - 'cocina' / 'chef': KDS y avance de comandas en cocina.
+ *   - 'host': anfitrión y gestión de reservaciones.
  *
  * `password_hash` y `pin_hash` usan argon2id (vía @node-rs/argon2).
  */
+export type UserRole =
+  | "gerente_operativo"
+  | "admin"
+  | "cajero"
+  | "mesero"
+  | "cocina"
+  | "chef"
+  | "host";
+
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   pinHash: text("pin_hash"),
   name: text("name").notNull(),
-  role: text("role").notNull().default("gerente_operativo"),
+  role: text("role").$type<UserRole | string>().notNull().default("gerente_operativo"),
   avatarInitials: text("avatar_initials").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

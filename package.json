@@ -16,6 +16,7 @@
     "docker:prod": "docker build --target runner -t ember-web:prod . && docker run --rm -p 3000:3000 ember-web:prod"
   },
   "dependencies": {
+    "@ember/types": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",

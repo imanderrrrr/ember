@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import {
   CloseShiftSchema,
   CreateSaleSchema,
@@ -57,11 +59,11 @@ sales.get(
 );
 
 
-function domainErrorResponse(c: any, err: unknown) {
-  if (err instanceof service.DomainError) {
+function domainErrorResponse(c: Context, err: unknown) {
+  if (err instanceof service.DomainError || err instanceof service.CalculationError) {
     return c.json(
       { error: err.code, message: err.message },
-      err.status as any,
+      err.status as ContentfulStatusCode,
     );
   }
   throw err;

@@ -27,6 +27,7 @@ export function RestaurantManager({
   activeZoneId,
   reservations,
   serviceDate,
+  user,
   billByTable,
 }: {
   plan: FloorPlan;
@@ -92,6 +93,8 @@ export function RestaurantManager({
     startSearchNav(() => router.push(`/salon?zone=${zoneId}`));
   };
 
+  const canEdit = user?.role === "gerente_operativo" || user?.role === "admin";
+
   return (
     <div className="flex min-h-screen w-full min-w-[1600px] flex-col bg-[#F7F3EE] font-sans text-[#1F1F1F]">
       <SalonTopBar
@@ -99,6 +102,7 @@ export function RestaurantManager({
         zones={plan.zones}
         reservations={reservations}
         onPickResult={handlePickResult}
+        canEdit={canEdit}
       />
       <div className="flex min-h-[1028px] flex-1">
         <SalonLeftSidebar
