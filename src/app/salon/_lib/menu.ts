@@ -1,19 +1,27 @@
-import { Beef, Cake, Coffee, Fish, Leaf, Utensils, Wheat, Wine } from "lucide-react";
+import {
+  Beef,
+  Cake,
+  Coffee,
+  Fish,
+  Leaf,
+  Utensils,
+  Wheat,
+  Wine,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { CatalogDTO, KitchenOrderDTO } from "@ember/types";
 
 /**
- * Catálogo de menú y helpers de comanda — módulo neutro (sin "use client") para
- * que pueda usarse tanto en Server Components (KDS) como en Client Components
- * (OrderModal, Mesa activa, rail del mesero).
- *
- * Todo es mock: aún no existe el módulo de productos/órdenes en el backend.
+ * Catálogo de menú y helpers de comanda.
+ * Soporta carga dinámica desde el backend oficial (PostgreSQL /api/catalog)
+ * y mantiene fallback seguro para resiliencia offline.
  */
 
 export interface Product {
   id: string;
   name: string;
   desc: string;
-  price: number; // precio unitario IVA incluido
+  price: number; // precio unitario IVA incluido (en Quetzales)
 }
 
 export interface Category {
@@ -30,21 +38,42 @@ export interface CartLine {
   qty: number;
 }
 
+export const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
+  leaf: Leaf,
+  utensils: Utensils,
+  wheat: Wheat,
+  beef: Beef,
+  fish: Fish,
+  coffee: Coffee,
+  wine: Wine,
+  cake: Cake,
+  entradas: Leaf,
+  principales: Utensils,
+  pasta: Wheat,
+  carnes: Beef,
+  pescados: Fish,
+  bebidas: Coffee,
+  vinos: Wine,
+  postres: Cake,
+};
+
+export function resolveCategoryIcon(iconOrKey?: string | null): LucideIcon {
+  if (!iconOrKey) return Utensils;
+  const lower = iconOrKey.toLowerCase();
+  return CATEGORY_ICON_MAP[lower] ?? Utensils;
+}
+
 export const CATEGORIES: Category[] = [
-  { key: "entradas", label: "Entradas", icon: Leaf, count: 8 },
-  { key: "principales", label: "Principales", icon: Utensils, count: 14 },
-  { key: "pasta", label: "Pasta y arroces", icon: Wheat, count: 6 },
-  { key: "carnes", label: "Carnes a la brasa", icon: Beef, count: 9 },
-  { key: "pescados", label: "Pescados y mariscos", icon: Fish, count: 7 },
-  { key: "bebidas", label: "Bebidas", icon: Coffee, count: 18 },
-  { key: "vinos", label: "Vinos", icon: Wine, count: 24 },
-  { key: "postres", label: "Postres", icon: Cake, count: 10 },
+  { key: "entradas", label: "Entradas", icon: Leaf, count: 4 },
+  { key: "principales", label: "Principales", icon: Utensils, count: 2 },
+  { key: "pasta", label: "Pasta y arroces", icon: Wheat, count: 1 },
+  { key: "carnes", label: "Carnes a la brasa", icon: Beef, count: 2 },
+  { key: "pescados", label: "Pescados y mariscos", icon: Fish, count: 1 },
+  { key: "bebidas", label: "Bebidas", icon: Coffee, count: 2 },
+  { key: "vinos", label: "Vinos", icon: Wine, count: 2 },
+  { key: "postres", label: "Postres", icon: Cake, count: 1 },
 ];
 
-/**
- * Catálogo mock por categoría. Las ids son estables (categoria-índice) para
- * que el carrito pueda identificarlos y consolidar líneas duplicadas.
- */
 export const CATALOG: Record<string, Product[]> = {
   entradas: [
     { id: "ent-1", name: "Tartar de atún", desc: "Cubos de atún rojo, aguacate, sésamo y soja yuzu.", price: 89 },
@@ -85,30 +114,102 @@ export function formatQ(n: number): string {
   return `Q${n.toFixed(2)}`;
 }
 
-/** Estados en los que una mesa tiene un pedido en curso. */
-const SERVICE_STATUSES = ["ocupada", "cocina", "esperando"];
+/**
+ * Convierte un DTO de catálogo del backend en las estructuras que consume la interfaz.
+ */
+export function buildCatalogFromDTO(dto: CatalogDTO | null | undefined): {
+  categories: Category[];
+  catalog: Record<string, Product[]>;
+  allProducts: Product[];
+} {
+  if (!dto || !dto.categories || dto.categories.length === 0) {
+    return {
+      categories: CATEGORIES,
+      catalog: CATALOG,
+      allProducts: Object.values(CATALOG).flat(),
+    };
+  }
+
+  const catalog: Record<string, Product[]> = {};
+  const allProducts: Product[] = [];
+
+  for (const item of dto.items) {
+    if (!item.isActive) continue;
+    const catKey = item.categoryId || item.category || "otros";
+    if (!catalog[catKey]) {
+      catalog[catKey] = [];
+    }
+    const product: Product = {
+      id: item.id,
+      name: item.name,
+      desc: item.description ?? "",
+      price: item.priceCents / 100,
+    };
+    catalog[catKey].push(product);
+    allProducts.push(product);
+  }
+
+  const categories: Category[] = dto.categories.map((c) => ({
+    key: c.id,
+    label: c.name,
+    icon: resolveCategoryIcon(c.icon ?? c.id),
+    count: (catalog[c.id] ?? []).length,
+  }));
+
+  return { categories, catalog, allProducts };
+}
 
 /**
- * Comanda representativa por mesa. Mientras no exista el módulo de órdenes en
- * el backend, derivamos una comanda determinística a partir del `tableId` para
- * que el rail del mesero, Mesa activa y el KDS muestren lo mismo. Las mesas que
- * no están en servicio devuelven una comanda vacía.
+ * Convierte órdenes reales de cocina de una mesa en líneas de carrito `CartLine[]`.
  */
-export function mockOrderForTable(tableId: string, status: string): CartLine[] {
-  if (!SERVICE_STATUSES.includes(status)) return [];
-  const flat = Object.values(CATALOG).flat();
-  if (flat.length === 0) return [];
-  let h = 0;
-  for (let i = 0; i < tableId.length; i++) h = (h * 31 + tableId.charCodeAt(i)) >>> 0;
-  const n = 2 + (h % 3); // 2..4 líneas
-  const seen = new Set<string>();
-  const lines: CartLine[] = [];
-  for (let i = 0; i < n; i++) {
-    const p = flat[(h + i * 7) % flat.length];
-    if (seen.has(p.id)) continue;
-    seen.add(p.id);
-    const qty = 1 + ((h >>> (i + 1)) & 1); // 1..2 (shift sin signo)
-    lines.push({ productId: p.id, name: p.name, unitPrice: p.price, qty });
+export function ordersToCartLines(orders: KitchenOrderDTO[]): CartLine[] {
+  const lineMap = new Map<string, CartLine>();
+  const flatFallback = Object.values(CATALOG).flat();
+
+  for (const order of orders) {
+    if (order.status === "entregada" || order.status === "cancelada") continue;
+    for (const item of order.items) {
+      const id = item.menuItemId || item.name;
+      let unitPrice =
+        item.priceCents && item.priceCents > 0
+          ? item.priceCents / 100
+          : 0;
+
+      if (unitPrice === 0) {
+        const found = flatFallback.find(
+          (p) => p.id === id || p.name.toLowerCase() === item.name.toLowerCase(),
+        );
+        if (found) unitPrice = found.price;
+      }
+
+      const existing = lineMap.get(id);
+      if (existing) {
+        existing.qty += item.qty;
+      } else {
+        lineMap.set(id, {
+          productId: id,
+          name: item.name,
+          unitPrice,
+          qty: item.qty,
+        });
+      }
+    }
   }
-  return lines;
+
+  return [...lineMap.values()];
+}
+
+/**
+ * Retorna las líneas de comanda de una mesa a partir de sus órdenes de cocina reales.
+ * Si no hay órdenes registradas, retorna un carrito vacío.
+ */
+export function mockOrderForTable(
+  _tableId: string,
+  _status: string,
+  orders?: KitchenOrderDTO[],
+): CartLine[] {
+  if (orders && orders.length > 0) {
+    return ordersToCartLines(orders);
+  }
+  return [];
 }

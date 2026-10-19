@@ -54,3 +54,12 @@ export async function updateKitchenOrder(
     }),
   );
 }
+
+/** Consulta órdenes desde el cliente vía /api/orders. */
+export async function fetchKitchenOrdersClient(
+  statuses?: string[],
+): Promise<KitchenOrderDTO[]> {
+  const q = statuses && statuses.length > 0 ? `?status=${statuses.join(",")}` : "";
+  return jsonOrThrow<KitchenOrderDTO[]>(fetch(`/api/orders${q}`));
+}
+

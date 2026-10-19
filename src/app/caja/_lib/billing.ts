@@ -62,7 +62,10 @@ export function buildBill(
     for (const item of order.items) {
       const key = `${item.name}|${item.mods ?? ""}`;
       const existing = lineMap.get(key);
-      const unit = priceFor(item.name);
+      const unit =
+        item.priceCents && item.priceCents > 0
+          ? item.priceCents / 100
+          : priceFor(item.name);
       if (existing) {
         existing.qty += item.qty;
         existing.lineTotal += unit * item.qty;

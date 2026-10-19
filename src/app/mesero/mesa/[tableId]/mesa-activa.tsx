@@ -23,18 +23,18 @@ import {
   X,
 } from "lucide-react";
 import {
-  CATALOG,
-  CATEGORIES,
+  buildCatalogFromDTO,
   IVA_RATE,
   formatQ,
-  mockOrderForTable,
   type CartLine,
+  type Category,
   type Product,
 } from "@/app/salon/_lib/menu";
 import { updateTable } from "@/app/salon/_lib/client-api";
 import { createKitchenOrder } from "@/app/cocina/_lib/orders";
 import { UserMenu } from "@/app/dashboard/user-menu";
 import type { SalonTable } from "@/app/salon/_lib/types";
+import type { CatalogDTO } from "@ember/types";
 
 /** Estación de cocina dominante de la comanda (heurística por nombres). */
 function stationForItems(names: string[]): string {
@@ -49,35 +49,43 @@ function stationForItems(names: string[]): string {
 
 type Waiter = { name: string; avatarInitials: string | null } | null;
 
-const ALL_PRODUCTS: { product: Product; categoryKey: string; categoryLabel: string }[] =
-  CATEGORIES.flatMap((c) =>
-    (CATALOG[c.key] ?? []).map((product) => ({
-      product,
-      categoryKey: c.key,
-      categoryLabel: c.label,
-    })),
-  );
-
 export function MesaActiva({
   table,
   zoneName,
   waiter,
   dateLabel,
   timeLabel,
+  catalogData,
+  initialCart,
 }: {
   table: SalonTable;
   zoneName: string;
   waiter: Waiter;
   dateLabel: string;
   timeLabel: string;
+  catalogData?: CatalogDTO | null;
+  initialCart?: CartLine[];
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  // Si la mesa ya está en servicio, arrancamos con su comanda en curso
-  // (misma fuente determinística que el rail del mesero); si está libre, vacía.
-  const [cart, setCart] = useState<CartLine[]>(() =>
-    mockOrderForTable(table.id, table.status),
-  );
+
+  const { categories, allProducts } = useMemo(() => {
+    const built = buildCatalogFromDTO(catalogData);
+    const all = built.categories.flatMap((c) =>
+      (built.catalog[c.key] ?? []).map((product) => ({
+        product,
+        categoryKey: c.key,
+        categoryLabel: c.label,
+      })),
+    );
+    return {
+      categories: built.categories,
+      allProducts: all,
+    };
+  }, [catalogData]);
+
+  // Si la mesa tiene órdenes reales en cocina, arrancamos con ellas; si no, comanda vacía.
+  const [cart, setCart] = useState<CartLine[]>(() => initialCart ?? []);
   const [activeCat, setActiveCat] = useState<string>("todos");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -94,20 +102,20 @@ export function MesaActiva({
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return ALL_PRODUCTS.filter(
+    return allProducts.filter(
       (x) =>
         (activeCat === "todos" || x.categoryKey === activeCat) &&
         (q === "" ||
           x.product.name.toLowerCase().includes(q) ||
           x.product.desc.toLowerCase().includes(q)),
     );
-  }, [activeCat, query]);
+  }, [allProducts, activeCat, query]);
 
-  const selected = ALL_PRODUCTS.find((x) => x.product.id === selectedId) ?? null;
+  const selected = allProducts.find((x) => x.product.id === selectedId) ?? null;
   const activeCatLabel =
     activeCat === "todos"
       ? "Todo el menú"
-      : CATEGORIES.find((c) => c.key === activeCat)?.label ?? "Menú";
+      : categories.find((c) => c.key === activeCat)?.label ?? "Menú";
 
   const addToCart = (p: Product) =>
     setCart((c) => {
@@ -141,6 +149,7 @@ export function MesaActiva({
         zoneName,
         partySize: comensales,
         mesero: waiterName,
+        station: stationForItems(cart.map((l) => l.name)),
         items: cart.map((l) => ({
           menuItemId: l.productId,
           qty: l.qty,
@@ -228,6 +237,7 @@ export function MesaActiva({
         />
         <MenuColumn
           table={table}
+          categories={categories}
           count={count}
           query={query}
           onQuery={setQuery}
@@ -457,6 +467,7 @@ function QuickAction({ icon, label }: { icon: React.ReactNode; label: string }) 
 
 function MenuColumn({
   table,
+  categories,
   count,
   query,
   onQuery,
@@ -470,6 +481,7 @@ function MenuColumn({
   onAdd,
 }: {
   table: SalonTable;
+  categories: Category[];
   count: number;
   query: string;
   onQuery: (q: string) => void;
@@ -482,7 +494,7 @@ function MenuColumn({
   onSelect: (id: string) => void;
   onAdd: (p: Product) => void;
 }) {
-  const tabs = [{ key: "todos", label: "Todos" }, ...CATEGORIES.map((c) => ({ key: c.key, label: c.label }))];
+  const tabs = [{ key: "todos", label: "Todos" }, ...categories.map((c) => ({ key: c.key, label: c.label }))];
   return (
     <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-[#F7F3EE]">
       <div className="flex flex-col gap-4 px-7 pb-4 pt-6">

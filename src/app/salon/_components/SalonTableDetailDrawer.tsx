@@ -155,6 +155,12 @@ function TableDetailContent({
       {orderModalOpen && (
         <OrderModal
           table={table}
+          initialLines={orderLines.map((l) => ({
+            productId: l.menuItemId ?? l.name,
+            name: l.name,
+            unitPrice: l.unitPrice,
+            qty: l.qty,
+          }))}
           sending={saving === "cocina"}
           onClose={() => {
             if (saving === "cocina") return;

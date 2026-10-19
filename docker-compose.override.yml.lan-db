@@ -1,0 +1,18 @@
+# EMBER · override local (NO modifica docker-compose.yml)
+#
+# Apunta el backend (ember-api de esta PC) a la base de datos que corre en OTRA PC
+# de la LAN (10.144.103.118:5432), en vez de la BD local `db`.
+# Docker Compose mezcla este archivo automáticamente en `docker compose up`.
+#
+# Para volver a la BD local: borra/renombra este archivo y `docker compose up -d api`.
+services:
+  api:
+    environment:
+      # ← BD remota (PC de la base de datos). Era: postgres://ember:ember@db:5432/ember
+      - DATABASE_URL=postgres://ember:ember@10.144.103.118:5432/ember
+      # Etiquetas para que la página /status muestre el nodo BD correcto
+      - STATUS_DATABASE_DEVICE_NAME=PC Base de datos
+      - STATUS_DATABASE_DEVICE_HOST=10.144.103.118
+      - STATUS_DATABASE_CONTAINER_NAME=ember-db
+      - STATUS_DATABASE_PORT=5432
+      - STATUS_BACKEND_DEVICE_HOST=10.144.103.219

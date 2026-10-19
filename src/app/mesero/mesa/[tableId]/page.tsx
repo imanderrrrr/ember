@@ -1,15 +1,17 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { fetchFloorPlan } from "@/app/salon/_lib/server-api";
+import { fetchKitchenOrders } from "@/app/cocina/_lib/orders-server";
+import { fetchCatalog } from "@/lib/catalog-server";
+import { ordersToCartLines } from "@/app/salon/_lib/menu";
 import { MesaActiva } from "./mesa-activa";
 
 /**
  * `/mesero/mesa/[tableId]` — Mesa activa (toma de pedido a pantalla completa).
  *
  * El mesero llega aquí al tocar "Tomar pedido" en su mapa (`/mesero`). Trae
- * la mesa real del plano y la zona a la que pertenece; el menú y la comanda
- * viven en el cliente (reusan el catálogo del OrderModal) hasta que exista el
- * módulo de órdenes en el backend.
+ * la mesa real del plano, su zona, el catálogo oficial desde la base de datos
+ * y la comanda real de la mesa (órdenes de cocina activas).
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -36,7 +38,12 @@ export default async function MesaActivaPage({
   params: Promise<{ tableId: string }>;
 }) {
   const { tableId } = await params;
-  const [session, plan] = await Promise.all([auth(), fetchFloorPlan()]);
+  const [session, plan, catalog, orders] = await Promise.all([
+    auth(),
+    fetchFloorPlan(),
+    fetchCatalog().catch(() => null),
+    fetchKitchenOrders(["nueva", "preparacion", "lista"]).catch(() => []),
+  ]);
 
   const table = plan.tables.find((t) => t.id === tableId) ?? null;
   if (!table) redirect("/mesero");
@@ -52,6 +59,10 @@ export default async function MesaActivaPage({
       }
     : null;
 
+  // Órdenes activas reales de esta mesa en cocina
+  const tableOrders = orders.filter((o) => o.tableId === table.id);
+  const initialCart = ordersToCartLines(tableOrders);
+
   return (
     <MesaActiva
       table={table}
@@ -59,6 +70,8 @@ export default async function MesaActivaPage({
       waiter={waiter}
       dateLabel={todayLabel()}
       timeLabel={nowLabel()}
+      catalogData={catalog}
+      initialCart={initialCart}
     />
   );
 }

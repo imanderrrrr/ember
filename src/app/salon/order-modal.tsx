@@ -16,58 +16,72 @@ import {
 } from "lucide-react";
 import type { SalonTable } from "./_lib/types";
 import {
-  CATALOG,
-  CATEGORIES,
+  buildCatalogFromDTO,
   IVA_RATE,
   formatQ,
   type CartLine,
+  type Category,
   type Product,
 } from "./_lib/menu";
+import { fetchCatalogClient } from "@/lib/catalog-client";
+import type { CatalogDTO } from "@ember/types";
 
 /**
  * Modal "Abrir pedido".
  *
- * Implementación fiel al frame `Salón en vivo - Modal Abrir pedido` del
- * `.pen`. Todos los datos son mock — todavía no hay módulo de productos ni
- * de órdenes en el backend. Lo único que sí tiene efecto real es el botón
- * "Enviar a cocina", que dispara `onSendToKitchen` (cambia el estado de
- * la mesa a `cocina` via API).
- *
- * Interactividad mock:
- *   - Cambiar categoría en el sidebar → muestra otros productos.
- *   - "+" en un producto → lo agrega al carrito.
- *   - "−" / "x" en el carrito → quita unidades / elimina la línea.
- *   - Los totales recalculan en vivo.
- *
- * Ninguno de estos cambios se persiste — todo vive en estado local.
+ * Conectado al catálogo oficial del menú (/api/catalog) y a la comanda
+ * real de la mesa en servicio. Si la mesa ya tiene una orden activa, el carrito
+ * se inicializa con sus productos; si está libre, arranca limpio.
  */
-
-/**
- * Carrito inicial: refleja el pedido mock que se muestra también en el
- * panel derecho del salón (TOTAL Q898). Cuando exista el módulo real de
- * órdenes, esto vendrá del backend.
- */
-const INITIAL_CART: CartLine[] = [
-  { productId: "ent-1", name: "Tartar de atún", unitPrice: 89, qty: 2 },
-  { productId: "pri-1", name: "Risotto de hongos", unitPrice: 95, qty: 1 },
-  { productId: "car-1", name: "Cordero al horno", unitPrice: 165, qty: 2 },
-  { productId: "vin-1", name: "Vino Ribera del Duero", unitPrice: 295, qty: 1 },
-];
 
 export function OrderModal({
   table,
   onClose,
   onSendToKitchen,
   sending,
+  initialLines,
+  initialCatalog,
 }: {
   table: SalonTable;
   onClose: () => void;
   /** Marca la mesa como "en cocina" y registra la comanda en el backend. */
   onSendToKitchen: (cart: CartLine[]) => Promise<void>;
   sending: boolean;
+  initialLines?: CartLine[];
+  initialCatalog?: CatalogDTO | null;
 }) {
-  const [activeCategory, setActiveCategory] = useState<string>("entradas");
-  const [cart, setCart] = useState<CartLine[]>(INITIAL_CART);
+  const [catalogData, setCatalogData] = useState<CatalogDTO | null>(
+    initialCatalog ?? null,
+  );
+
+  useEffect(() => {
+    if (initialCatalog) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchCatalogClient();
+        if (!cancelled) setCatalogData(data);
+      } catch (e) {
+        console.error("[OrderModal] Error loading catalog:", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialCatalog]);
+
+  const { categories, catalog } = useMemo(
+    () => buildCatalogFromDTO(catalogData),
+    [catalogData],
+  );
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const activeCategory =
+    selectedCategory && categories.some((c) => c.key === selectedCategory)
+      ? selectedCategory
+      : (categories[0]?.key ?? "entradas");
+
+  const [cart, setCart] = useState<CartLine[]>(() => initialLines ?? []);
 
   // Totales: las price unitarios incluyen IVA, así que descomponemos.
   // gross = subtotal + IVA; subtotal = gross / 1.12; iva = gross - subtotal.
@@ -118,11 +132,10 @@ export function OrderModal({
     setCart((c) => c.filter((l) => l.productId !== productId));
   };
 
-  const products = CATALOG[activeCategory] ?? [];
-  const categoryLabel =
-    CATEGORIES.find((c) => c.key === activeCategory)?.label ?? "";
-  const categoryProductCount =
-    CATEGORIES.find((c) => c.key === activeCategory)?.count ?? products.length;
+  const products = catalog[activeCategory] ?? [];
+  const currentCat = categories.find((c) => c.key === activeCategory);
+  const categoryLabel = currentCat?.label ?? "";
+  const categoryProductCount = currentCat?.count ?? products.length;
 
   return (
     <div
@@ -153,8 +166,9 @@ export function OrderModal({
 
         <div className="flex flex-1 overflow-hidden">
           <CategorySidebar
+            categories={categories}
             active={activeCategory}
-            onSelect={setActiveCategory}
+            onSelect={setSelectedCategory}
           />
           <ProductsColumn
             label={categoryLabel}
@@ -276,9 +290,11 @@ function ChipStatus() {
 /* ───────── Category sidebar ───────── */
 
 function CategorySidebar({
+  categories,
   active,
   onSelect,
 }: {
+  categories: Category[];
   active: string;
   onSelect: (key: string) => void;
 }) {
@@ -288,7 +304,7 @@ function CategorySidebar({
         CATEGORÍAS
       </span>
       <div className="flex flex-col gap-1.5">
-        {CATEGORIES.map((c) => {
+        {categories.map((c) => {
           const isActive = c.key === active;
           const Icon = c.icon;
           return (
