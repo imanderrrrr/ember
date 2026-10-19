@@ -4,7 +4,7 @@
  * precios. Si un platillo no está en el catálogo se estima Q0 (se muestra
  * como "precio pendiente") y no bloquea el cobro.
  */
-import { CATALOG, IVA_RATE, formatQ } from "@/app/salon/_lib/menu";
+import { CATALOG, formatQ } from "@/app/salon/_lib/menu";
 import type { KitchenOrderDTO } from "@/app/cocina/_lib/orders";
 import type { SalonTable } from "@/app/salon/_lib/types";
 
