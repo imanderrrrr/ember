@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import {
+  AlertCircle,
   ArrowLeft,
   Banknote,
   ChefHat,
@@ -100,6 +101,8 @@ export function CajaScreen({
   const [split, setSplit] = useState<{ parts: SplitPart[]; paidCount: number } | null>(
     null,
   );
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
 
   const selectedBill = bills.find((b) => b.tableId === selectedId) ?? null;
 
@@ -125,6 +128,7 @@ export function CajaScreen({
   const cancelSplit = () => {
     setSplit(null);
     setAmount("");
+    setPayError(null);
   };
 
   /* Numpad */
@@ -146,7 +150,7 @@ export function CajaScreen({
 
   /* Confirmar cobro */
   const handleConfirm = useCallback(async () => {
-    if (!selectedBill) return;
+    if (!selectedBill || paying) return;
 
     // Con división activa: se cobra parte por parte. Solo al cobrar la última
     // parte se finaliza la cuenta (registra la venta y la mesa pasa a limpieza).
@@ -159,8 +163,11 @@ export function CajaScreen({
 
     // Finalizar el cobro atómicamente: en una sola transacción ACID de backend se
     // registra la venta (sales), se marca la comanda de cocina y la mesa pasa a limpieza.
+    setPaying(true);
+    setPayError(null);
     try {
       await createSale({
+        orderId: selectedBill.orderId ?? null,
         tableId: selectedBill.tableId,
         tableLabel: selectedBill.tableLabel,
         zoneName: selectedBill.zoneName,
@@ -182,8 +189,11 @@ export function CajaScreen({
       setDone(selectedBill.tableLabel);
     } catch (e) {
       console.error("[caja] transacción atómica de cobro failed", e);
+      setPayError(e instanceof Error ? e.message : "Error al procesar el cobro en el servidor");
+    } finally {
+      setPaying(false);
     }
-  }, [selectedBill, split, method, user]);
+  }, [selectedBill, split, method, user, paying]);
 
   const handleNext = () => {
     setDone(null);
@@ -214,7 +224,10 @@ export function CajaScreen({
         <LeftPanel
           bills={bills}
           selectedId={selectedId}
-          onSelect={setSelectedId}
+          onSelect={(id) => {
+            setSelectedId(id);
+            setPayError(null);
+          }}
           bill={selectedBill}
           homeHref={homeHref}
           showTableSelector={showTableSelector}
@@ -234,6 +247,8 @@ export function CajaScreen({
           onSplit={() => setSplitOpen(true)}
           cancelHref={backHref}
           split={split}
+          paying={paying}
+          payError={payError}
         />
         {/* RIGHT */}
         <RightPanel
@@ -709,6 +724,8 @@ function CenterPanel({
   onSplit,
   cancelHref,
   split,
+  paying,
+  payError,
 }: {
   bill: Bill | null;
   method: PayMethod;
@@ -721,6 +738,8 @@ function CenterPanel({
   onSplit: () => void;
   cancelHref: string;
   split: { parts: SplitPart[]; paidCount: number } | null;
+  paying?: boolean;
+  payError?: string | null;
 }) {
   const displayAmount = amount || exactAmount;
   // Índice (1-based) de la parte que se está cobrando, si hay división.
@@ -860,6 +879,14 @@ function CenterPanel({
           ))}
         </div>
 
+        {/* Error banner */}
+        {payError && (
+          <div className="flex items-center gap-2 rounded-[10px] border border-[#F87171] bg-[#FEF2F2] px-4 py-2.5 text-[12px] text-[#B91C1C]">
+            <AlertCircle className="size-4 shrink-0 text-[#DC2626]" />
+            <span>{payError}</span>
+          </div>
+        )}
+
         {/* Footer actions */}
         <div className="flex items-center gap-3 pt-1">
           <button
@@ -870,7 +897,7 @@ function CenterPanel({
           </button>
           <button
             onClick={onSplit}
-            disabled={!bill}
+            disabled={!bill || paying}
             className="flex items-center gap-2 rounded-[10px] border border-[#1F1F1F] bg-white px-5 py-3 text-[12px] font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7F3EE] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Split className="size-4" strokeWidth={1.9} />
@@ -885,11 +912,11 @@ function CenterPanel({
           </Link>
           <button
             onClick={onConfirm}
-            disabled={!bill}
+            disabled={!bill || paying}
             className="flex items-center gap-2.5 rounded-[10px] bg-[#E67E22] px-6 py-3 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(230,126,34,0.3)] transition-colors hover:bg-[#c2410c] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Receipt className="size-4" strokeWidth={2} />
-            {confirmLabel}
+            {paying ? "Procesando cobro..." : confirmLabel}
           </button>
         </div>
       </div>

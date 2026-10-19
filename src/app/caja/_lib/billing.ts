@@ -18,6 +18,7 @@ export interface BillLine {
 }
 
 export interface Bill {
+  orderId?: string | null;
   tableId: string;
   tableLabel: string;
   zoneName: string;
@@ -55,6 +56,7 @@ export function buildBill(
   partySize: number,
   mesero: string | null,
   orders: KitchenOrderDTO[],
+  orderId?: string | null,
 ): Bill {
   // Consolidar líneas de todas las órdenes activas de la mesa.
   const lineMap = new Map<string, BillLine>();
@@ -68,7 +70,7 @@ export function buildBill(
           : priceFor(item.name);
       if (existing) {
         existing.qty += item.qty;
-        existing.lineTotal += unit * item.qty;
+        existing.lineTotal = Math.round(existing.qty * unit * 100) / 100;
       } else {
         const catalogItem = Object.values(CATALOG)
           .flat()
@@ -78,7 +80,7 @@ export function buildBill(
           name: item.name,
           qty: item.qty,
           unitPrice: unit,
-          lineTotal: unit * item.qty,
+          lineTotal: Math.round(item.qty * unit * 100) / 100,
           mods: item.mods,
         });
       }
@@ -86,16 +88,23 @@ export function buildBill(
   }
 
   const lines = [...lineMap.values()];
-  // Los precios del catálogo ya incluyen IVA (ver menu.ts: "precio unitario
-  // IVA incluido"). El total que paga el cliente es la suma de las líneas; el
-  // subtotal y el IVA se desglosan hacia adentro. Misma convención que Mesa
-  // activa, para que el total que cobra caja coincida con el que ve el mesero.
-  const gross = lines.reduce((a, l) => a + l.lineTotal, 0);
-  const subtotal = gross / (1 + IVA_RATE);
-  const iva = gross - subtotal;
-  const total = gross;
+
+  // Aritmética financiera idéntica a sales.calculator.ts en backend:
+  // Previene float rounding errors y rechazo de 'price_tampered'.
+  let subtotalCents = 0;
+  for (const line of lines) {
+    const itemPriceCents = Math.round(line.unitPrice * 100);
+    subtotalCents += itemPriceCents * line.qty;
+  }
+  const ivaCents = Math.round((subtotalCents * 12) / 100);
+  const totalCents = subtotalCents + ivaCents;
+
+  const subtotal = subtotalCents / 100;
+  const iva = ivaCents / 100;
+  const total = totalCents / 100;
 
   return {
+    orderId: orderId ?? orders[0]?.id ?? null,
     tableId,
     tableLabel,
     zoneName,
@@ -129,6 +138,7 @@ export function buildBillForTable(
     table.partySize ?? table.seats,
     tableOrders[0]?.mesero ?? null,
     tableOrders,
+    tableOrders[0]?.id ?? null,
   );
 }
 
